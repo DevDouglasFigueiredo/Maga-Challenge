@@ -1,6 +1,10 @@
 import { Given, When, Then } from '@badeball/cypress-cucumber-preprocessor';
 import 'cypress-plugin-api';
 
+const millisecondsPerSecond = 1000;
+const rateLimitWindowSeconds = 3600;
+const resetToleranceSeconds = 60;
+
 Given('que existe cota disponível para consultas públicas sem autenticação', () => {
   cy.api({
     method: 'GET',
@@ -24,6 +28,47 @@ When('consulto o usuário público {string}', function (userLogin) {
   }).as('githubResponse');
 });
 
+Given('que possuo autenticação válida no GitHub com cota padrão de {int} consultas por hora', function (expectedLimit) {
+  this.authenticatedRateLimit = expectedLimit;
+
+  cy.env(['GITHUB_TOKEN'], { log: false }).then(({ GITHUB_TOKEN: token }) => {
+    if (typeof token !== 'string' || token.trim() === '') {
+      throw new Error('Configure CYPRESS_GITHUB_TOKEN no terminal ou GITHUB_TOKEN em cypress.env.json antes de executar API-02.');
+    }
+  });
+});
+
+Given('existe cota disponível para consultas autenticadas', function () {
+  cy.env(['GITHUB_TOKEN'], { log: false }).then(({ GITHUB_TOKEN: token }) => {
+    cy.api({
+      method: 'GET',
+      url: 'https://api.github.com/rate_limit',
+      headers: { authorization: `Bearer ${token}` },
+      failOnStatusCode: false,
+      log: false,
+    }).then(({ status, body }) => {
+      expect(status, 'consulta autenticada da cota; 401 indica token inválido ou expirado').to.equal(200);
+      expect(body.resources.core.limit, 'limite com autenticação').to.equal(this.authenticatedRateLimit);
+      expect(body.resources.core.remaining, 'cota autenticada disponível para executar o cenário')
+        .to.be.greaterThan(0);
+    });
+  });
+});
+
+When('consulto o usuário público {string} com minha autenticação', function (userLogin) {
+  this.userLogin = userLogin;
+
+  cy.env(['GITHUB_TOKEN'], { log: false }).then(({ GITHUB_TOKEN: token }) => {
+    cy.api({
+      method: 'GET',
+      url: `https://api.github.com/users/${encodeURIComponent(userLogin)}`,
+      headers: { authorization: `Bearer ${token}` },
+      failOnStatusCode: false,
+      log: false,
+    }).as('githubResponse');
+  });
+});
+
 Then('recebo os dados do usuário solicitado', function () {
   cy.get('@githubResponse').then(({ status, body }) => {
     expect(status, 'consulta do usuário público').to.equal(200);
@@ -45,14 +90,13 @@ Then('sou informado da quantidade restante e do momento de renovação da cota',
     expect(headers.date, 'Date do servidor').to.be.a('string').and.not.be.empty;
 
     const resetSeconds = Number(headers['x-ratelimit-reset']);
-    const serverSeconds = Date.parse(headers.date) / 1000;
+    const serverSeconds = Date.parse(headers.date) / millisecondsPerSecond;
 
     expect(Number.isSafeInteger(resetSeconds), 'reset em segundos inteiros').to.equal(true);
     expect(Number.isFinite(serverSeconds), 'data válida do servidor').to.equal(true);
     expect(resetSeconds, 'renovação posterior ao horário da resposta').to.be.greaterThan(serverSeconds);
-    // Compara com o servidor, permitindo 60 segundos de tolerância na janela.
     expect(resetSeconds - serverSeconds, 'renovação dentro de uma hora com tolerância')
-      .to.be.at.most(3660);
+      .to.be.at.most(rateLimitWindowSeconds + resetToleranceSeconds);
   });
 });
 

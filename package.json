@@ -14,6 +14,9 @@
     "node": "^22.0.0 || ^24.0.0 || >=26.0.0"
   },
   "cypress-cucumber-preprocessor": {
+    "stepDefinitions": [
+      "cypress/parte1-api/specs/[filepath].cy.js"
+    ],
     "filterSpecs": true,
     "omitFiltered": true
   },
