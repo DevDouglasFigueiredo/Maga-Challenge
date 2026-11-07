@@ -11,7 +11,7 @@
     "test:parte3": "cypress run --spec 'parte3-arquivos/**/*.feature'"
   },
   "engines": {
-    "node": "^22.0.0 || ^24.0.0 || >=26.0.0"
+    "node": "^22.13.0 || ^24.0.0 || >=26.0.0"
   },
   "cypress-cucumber-preprocessor": {
     "filterSpecs": true,
@@ -20,6 +20,7 @@
   "devDependencies": {
     "@badeball/cypress-cucumber-preprocessor": "28.0.1",
     "@bahmutov/cypress-esbuild-preprocessor": "2.2.8",
+    "@faker-js/faker": "10.5.0",
     "cypress": "16.2.1",
     "cypress-plugin-api": "2.12.3",
     "esbuild": "0.28.2"

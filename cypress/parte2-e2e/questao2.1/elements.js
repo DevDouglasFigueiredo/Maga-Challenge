@@ -47,6 +47,7 @@ export const elements = {
     tax: '[data-test="tax-label"]',
     total: '[data-test="total-label"]',
     paymentInfo: '[data-test="payment-info-value"]',
+    shippingInfo: '[data-test="shipping-info-value"]',
     confirmationTitle: '[data-test="complete-header"]',
     confirmationMessage: '[data-test="complete-text"]',
   },

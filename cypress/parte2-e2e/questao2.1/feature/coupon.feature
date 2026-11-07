@@ -1,10 +1,6 @@
 # language: pt
 
-# Questão 2.1 — contexto de cupom de uso único e questão teórica 2.1.a.
-# Limitação: SauceDemo não oferece aplicação ou consumo de cupons.
-# Propostas documentais; não implementadas, simuladas, executadas ou aprovadas.
-# @skip é herdado por todos os cenários desta funcionalidade.
-@parte2 @questao2_1 @cupom @skip
+@coupon @skip
 Funcionalidade: Aplicação de cupom de desconto de uso único
   Como cliente com uma compra elegível
   Quero utilizar um cupom válido uma única vez

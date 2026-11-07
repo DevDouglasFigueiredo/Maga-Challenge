@@ -1,13 +1,9 @@
-import { Given, When, Then, After } from '@badeball/cypress-cucumber-preprocessor';
+import { Given, When, Then } from '@badeball/cypress-cucumber-preprocessor';
 import { elements } from '../elements';
-import '../commands/auth';
+import './common.steps';
 import '../commands/cart';
 
 const priceFormat = /^\$\d+\.\d{2}$/;
-
-Given('que o cliente está autenticado', () => {
-  cy.sauceDemoLogin();
-});
 
 Given('que o cliente possui um carrinho vazio', () => {
   cy.openCart();
@@ -109,10 +105,4 @@ Then('o carrinho fica vazio', () => {
 
 Then('a contagem do carrinho deixa de indicar itens', () => {
   cy.get(elements.text.cartBadge).should('not.exist');
-});
-
-After({ tags: '@carrinho' }, () => {
-  cy.clearAllCookies();
-  cy.clearAllLocalStorage();
-  cy.clearAllSessionStorage();
 });

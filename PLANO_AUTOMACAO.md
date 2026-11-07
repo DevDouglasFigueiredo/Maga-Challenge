@@ -581,3 +581,279 @@ npm run test:open -- --env tags="@carrinho and not @skip"
 Abrir `cart.feature`, conferir os três comportamentos aprovados e a execução
 do hook After com limpeza após cada cenário. Refatoração aguardando revisão do
 usuário; aprovação anterior dos cenários preservada. Nenhum próximo cenário iniciado.
+
+## Parte 2 — E2E-04: avançar com dados válidos
+
+CI anterior: execução bem-sucedida informada pelo usuário após push manual;
+sem verificação independente dessa execução. Refatoração anterior do carrinho
+autorizada para continuidade pelo usuário.
+Estado E2E-04: revisado e aprovado explicitamente pelo usuário. Requisitos: Questão 2.1, dados dinâmicos, avanço
+no checkout e limpeza após cada teste. Alvo: SauceDemo público, sem simulação.
+
+- Dado: autenticação pelo step comum, Backpack e Bike Light no carrinho.
+- Quando: gerar nome/sobrenome/CEP com Faker e informar na identificação.
+- Então: revisão visível, URL correta, exatamente os produtos escolhidos, uma
+  unidade de cada e preços iguais ao catálogo, sem depender da ordem.
+
+Extraídos login e After para `Specs/common.steps.js`, importado diretamente
+pelos dois specs. Hook restrito a `@cart or @dadosCheckout`; cache de sessão
+preservado. Commands de checkout separados; seletores existentes reutilizados.
+Gerador `fixtures/checkout-data.js` com Faker 10.5.0 pt_BR, sem seed fixa.
+Ajustado requisito Node 22 para 22.13+; Node 24 da CI preservado. Dados sintéticos
+podem se repetir e CEP não comprova existência postal. Apenas E2E-04 habilitado
+na feature; E2E-05 e seus três exemplos continuam ignorados, sem steps próprios.
+
+### E2E-04 — resultados
+
+Comandos efetivamente executados na versão final:
+
+```bash
+env -u ELECTRON_RUN_AS_NODE npm run test:parte2 -- --env tags="@E2E-04 and not @skip"
+env -u ELECTRON_RUN_AS_NODE npm run test:parte2 -- --env tags="(@cart or @E2E-04) and not @skip"
+```
+
+- E2E-04 isolado: 1 passou, zero falhas, pendentes ou ignorados; saída 0.
+- Regressão E2E-01 a E2E-04: 4 passaram, zero falhas, pendentes ou ignorados; saída 0.
+- Cypress 16.2.1, Node.js 24.22.0 e Electron headless, SauceDemo real.
+- Gerador Faker: 20 amostras com nomes não vazios e CEP de oito dígitos.
+- Sintaxe JavaScript, Gherkin e `git diff --check` passaram. Os 14 casos foram
+  preservados; E2E-05 mantém três exemplos ignorados.
+- Login definido uma única vez em common.steps.js; ambos os specs importam
+  esse módulo. Os quatro testes habilitados estão cobertos pelo hook After.
+
+A feature de carrinho já utiliza `@cart` no estado atual do projeto, em vez de
+`@carrinho`. Preservada essa escolha do usuário, adaptando hook e filtro de
+regressão. O primeiro comando com filtro antigo selecionou apenas E2E-04 e não
+foi contado como regressão; a execução corrigida acima confirmou os quatro casos.
+
+Arquivos novos: common steps, spec de dados, commands de checkout e gerador Faker.
+Alterados spec de carrinho para consumir o módulo comum, feature de dados,
+manifesto/lockfile e documentação. Nenhuma configuração de descoberta ou workflow
+foi alterada. Não valida totais, pagamento ou finalização nesta etapa.
+
+Revisão manual:
+
+```bash
+npm run test:open -- --env tags="@E2E-04 and not @skip"
+```
+
+Abrir dados-checkout.feature, conferir preenchimento dos três dados gerados,
+avanço para revisão, Backpack e Bike Light, quantidade 1 por produto e os preços
+anunciados. E2E-04 aguarda aprovação explícita; nenhum exemplo de campo
+obrigatório foi implementado.
+
+## Parte 2 — E2E-05: nome obrigatório
+
+E2E-04 aprovado explicitamente pelo usuário. Estado E2E-05/nome: aguardando revisão, execução manual e aprovação explícita do usuário.
+Requisito: Questão 2.1, validação de identificação antes da revisão.
+Alvo: SauceDemo público, sem simulação.
+
+- Dado: autenticação compartilhada e produtos no carrinho pelo Contexto.
+- Quando: gerar dados Faker e deixar somente firstName vazio antes de prosseguir.
+- Então: erro exato `Error: First Name is required`, permanência na identificação
+  e ausência do resumo.
+
+Mantido esquema com tag @E2E-05 e três exemplos em dois blocos: nome habilitado
+com @nomeObrigatorio; sobrenome e CEP com @skip. Steps recusam explicitamente
+campos ainda não implementados. Command ajustado somente para limpar e permitir
+nome vazio, evitando type de string vazia. Demais campos preenchidos e conferidos;
+sem novas dependências, seletores ou configuração. Limpeza compartilhada mantida.
+
+### E2E-05/nome — resultados
+
+Comandos executados:
+
+```bash
+env -u ELECTRON_RUN_AS_NODE npm run test:parte2 -- --env tags="@E2E-05 and @nomeObrigatorio and not @skip"
+env -u ELECTRON_RUN_AS_NODE npm run test:parte2 -- --env tags="(@cart or @dadosCheckout) and not @skip"
+```
+
+Resultado no SauceDemo real, Cypress 16.2.1, Node.js 24.22.0, Electron headless:
+
+- Nome obrigatório isolado: 1 passou; zero falhas, pendentes ou ignorados; saída 0.
+- Regressão dos três cenários de carrinho, E2E-04 e E2E-05/nome: 5 passaram;
+  zero falhas, pendentes ou ignorados; saída 0.
+- Sintaxe JavaScript, Gherkin e `git diff --check` passaram. Preservados três
+  exemplos com E2E-05 compartilhado; somente nome habilitado. Sobrenome e CEP
+  excluídos por @skip não representam cobertura executada.
+
+Alterados feature de dados, spec correspondente e command de checkout, além de
+README e acompanhamento. Steps verificam mensagem específica, URL, identificação
+visível e resumo ausente; o command confirma nome vazio e demais dados preenchidos.
+Não implementado comportamento de sobrenome/CEP, nem modificado login ou limpeza.
+
+Revisão manual:
+
+```bash
+npm run test:open -- --env tags="@E2E-05 and @nomeObrigatorio and not @skip"
+```
+
+Abrir dados-checkout.feature. Conferir nome vazio, sobrenome e CEP preenchidos,
+mensagem `Error: First Name is required` e permanência na identificação sem resumo.
+Aguardar aprovação explícita antes de implementar o exemplo de sobrenome.
+
+## E2E-05 — tabela única e três exemplos
+
+O usuário pediu preservar a escrita original do esquema, com uma única tabela
+contendo nome, sobrenome e CEP. Após esclarecer o impacto sobre a execução,
+autorizou explicitamente implementar e validar os três exemplos neste ciclo,
+como exceção à regra de um caso por vez. A feature já havia sido restaurada
+pelo usuário e foi preservada sem alterações nesta etapa.
+Estado: esquema revisado e aprovado explicitamente pelo usuário.
+
+O spec mapeia campo de negócio para propriedade dos dados e mensagem específica.
+Cada execução gera dados Faker e esvazia somente a propriedade indicada. O
+command limpa e confere todos os campos, evitando type de string vazia.
+Asserções mantidas nos steps: erro visível/exato, URL da identificação,
+formulário visível e resumo ausente. Sessão e limpeza preservadas.
+
+### E2E-05 — resultados dos três exemplos
+
+Comandos executados:
+
+```bash
+env -u ELECTRON_RUN_AS_NODE npm run test:parte2 -- --env tags="@E2E-05 and not @skip"
+env -u ELECTRON_RUN_AS_NODE npm run test:parte2 -- --env tags="(@cart or @dadosCheckout) and not @skip"
+```
+
+- E2E-05: 3 passaram, zero falhas, pendentes ou ignorados; saída 0.
+- Regressão Parte 2 habilitada: 7 passaram, zero falhas, pendentes ou ignorados; saída 0.
+- Cypress 16.2.1, Node.js 24.22.0, Electron headless, SauceDemo real.
+- Sintaxe JavaScript, Gherkin e `git diff --check` passaram. Uma única tabela
+  contém nome, sobrenome e CEP, todos com E2E-05 e sem skip.
+
+Alterados spec de dados e command de checkout, README e acompanhamento. Feature
+original do usuário preservada nesta etapa. Mensagens exatas verificadas:
+First Name is required, Last Name is required e Postal Code is required, todas
+com prefixo Error:. Para cada caso, somente o campo indicado fica vazio; demais
+dados gerados por Faker são preenchidos e conferidos antes de prosseguir.
+
+Revisão manual:
+
+```bash
+npm run test:open -- --env tags="@E2E-05 and not @skip"
+```
+
+Abrir dados-checkout.feature e conferir os três exemplos, campos vazios,
+mensagens específicas e bloqueio do avanço. Aguardar aprovação explícita
+do esquema antes de iniciar outro cenário.
+
+## Parte 2 — E2E-08: revisão de valores, pagamento e entrega
+
+E2E-05 revisado e aprovado explicitamente pelo usuário. Estado E2E-08: aguardando revisão, execução manual e aprovação explícita do usuário.
+Requisito: Questão 2.1, revisão da compra. SauceDemo público, sem simulação.
+
+- Dado: cliente autenticado; Backpack e Bike Light, uma unidade de cada, com
+  preços do catálogo comparados à fixture; identificação com Faker.
+- Quando: revisa o pedido antes de concluir.
+- Então: produtos e quantidades corretos; subtotal, imposto e total calculados
+  independentemente; cartão e entrega com textos exatos.
+
+Fixture: Backpack 2999 centavos; Bike Light 999; taxa 800 pontos-base (8%),
+expectativa explícita desta massa e não regra fiscal geral; pagamento SauceCard
+#31337; entrega Free Pony Express Delivery!, gratuita. Totais esperados:
+subtotal 3998, imposto 320 e total 4318 centavos.
+
+Helper puro calcula preço × quantidade, imposto com arredondamento ao centavo
+mais próximo (meio centavo para cima) e total, usando centavos e pontos-base.
+Não usa valores obtidos da tela. Comparações visíveis nos steps; commands já
+existentes reutilizados. Hook de limpeza ampliado para @pagamentoConfirmacao.
+Apenas E2E-08 habilitado nessa feature; E2E-09, E2E-10 e PAG-01 seguem com skip.
+Não finaliza compra, simula cobrança ou comprova persistência financeira em backend.
+
+### E2E-08 — resultados
+
+Comandos executados:
+
+```bash
+env -u ELECTRON_RUN_AS_NODE npm run test:parte2 -- --env tags="@E2E-08 and not @skip"
+env -u ELECTRON_RUN_AS_NODE npm run test:parte2 -- --env tags="(@parte2 or @cart) and not @skip"
+```
+
+O comando sem `not @skip` foi intencionalmente omitido para não executar casos
+ainda planejados ou indisponíveis no alvo público.
+
+- E2E-08 isolado: 1 passou, zero falhas, pendentes ou ignorados; saída 0.
+- Regressão Parte 2 habilitada: 8 passaram, zero falhas, pendentes ou ignorados; saída 0.
+- Cypress 16.2.1, Node.js 24.22.0, Electron headless, SauceDemo real.
+- Helper verificado diretamente com assert estrito: compra esperada
+  (3998/320/4318 centavos), 5 centavos a 10% (meio centavo → 1), 4 centavos a
+  10% (abaixo de meio → 0), três unidades de 10 centavos sem imposto
+  (subtotal/total 30) e formatação de 320 como $3.20. Todos passaram.
+- Sintaxe JavaScript, Gherkin e `git diff --check` passaram; 14 casos preservados,
+  oito habilitados e todos cobertos pelo hook compartilhado.
+
+Arquivos novos: fixture review-order.js, helper utils/order-totals.js e spec
+pagamento-confirmacao.cy.js. Alterados feature, seletor de entrega, hook comum,
+README e acompanhamento. Nenhuma configuração, dependência ou cenário posterior
+implementado. Valores esperados não são derivados do resumo exibido.
+
+Revisão manual:
+
+```bash
+npm run test:open -- --env tags="@E2E-08 and not @skip"
+```
+
+Abrir pagamento-confirmacao.feature e conferir Backpack e Bike Light, uma
+unidade por produto, preços $29.99/$9.99, subtotal $39.98, imposto $3.20, total
+$43.18, SauceCard #31337 e Free Pony Express Delivery!. O cenário termina
+na revisão. Aguardar aprovação explícita antes de implementar E2E-09.
+
+## Refatoração E2E-08 — listas de produtos
+
+Usuário autorizou encapsular inclusão e validação de listas em commands e
+escolheu três produtos para demonstrar mais de dois. Estado: aguardando revisão
+e aprovação explícita da refatoração.
+Resultados anteriores com dois produtos preservados como histórico.
+
+- `cy.addProductsToCart(items)` valida lista não vazia, nomes distintos e
+  quantidade 1; reutiliza inclusão individual e confere nome/preço no catálogo.
+- `cy.validateProducts(items)` verifica conjunto exato de produtos, quantidade
+  de itens, quantidades e preços por produto, sem depender da ordem.
+- Given alterado para mais de um produto distinto, com verificação da massa
+  e chamada do command. Then de produtos delega a validação reutilizável.
+- Fixture atual: Backpack 2999, Bike Light 999 e Bolt T-Shirt 1599 centavos,
+  quantidade 1 por produto. Subtotal 5597, imposto 448 e total 6045 centavos,
+  calculados pelo helper existente sem alterações; cartão e entrega preservados.
+
+Sem novas dependências, seletores, POM, configuração ou cenários habilitados.
+
+### Listas de produtos — resultados
+
+```bash
+env -u ELECTRON_RUN_AS_NODE npm run test:parte2 -- --env tags="@E2E-08 and not @skip"
+env -u ELECTRON_RUN_AS_NODE npm run test:parte2 -- --env tags="(@parte2 or @cart) and not @skip"
+```
+
+- E2E-08 isolado com três produtos: 1 passou, zero falhas, pendentes ou ignorados; saída 0.
+- Regressão dos oito testes habilitados: 8 passaram, zero falhas, pendentes ou ignorados; saída 0.
+- Cypress 16.2.1, Node.js 24.22.0, Electron headless, SauceDemo real.
+- Cálculo direto da nova fixture confirmado com assert estrito:
+  subtotal 5597, imposto 448 e total 6045 centavos. Helper preservado.
+- Sintaxe JavaScript, Gherkin e `git diff --check` passaram. Nenhum novo cenário habilitado.
+
+Revisão manual: `npm run test:open -- --env tags="@E2E-08 and not @skip"`.
+Abrir pagamento-confirmacao.feature e conferir três produtos distintos, uma
+unidade de cada, preços $29.99/$9.99/$15.99, subtotal $55.97, imposto $4.48, total
+$60.45, cartão e entrega gratuita. Aguardar aprovação antes de E2E-09.
+
+## Verificação antes do commit — renomes em inglês
+
+O usuário renomeou as features para checkout-data.feature, coupon.feature e
+payment-confirmation.feature, com tag @CheckoutData na identificação. Preservados
+os renomes; corrigido o spec de pagamento para payment-confirmation.cy.js,
+conforme descoberta configurada. Hook compartilhado adaptado a @CheckoutData
+para manter limpeza. README atualizado para nomes e tags atuais.
+
+O filtro antigo (@parte2 or @cart) selecionou apenas quatro testes após os renomes;
+essa execução não foi contada como regressão completa. Executado em seguida:
+
+```bash
+env -u ELECTRON_RUN_AS_NODE npm run test:parte2 -- --env tags="not @skip"
+```
+
+Resultado final: 8 passaram, zero falhas, pendentes ou ignorados; saída 0.
+Gherkin e associação feature/spec conferidos: 14 casos, oito habilitados e todos
+cobertos pela limpeza. git diff --check passou. Sem implementação de E2E-09.
+Commit solicitado pelo usuário; excluídos AGENTS.md, desafio.md, credenciais
+locais e artefatos Playwright, conforme decisão anterior.

@@ -5,7 +5,7 @@
 # O pagamento demonstrativo do site não comprova cobrança ou pedido em backend.
 # Automação futura de E2E-10: login até conclusão, com dados dinâmicos e
 # limpeza de cookies e localStorage após cada teste, inclusive em falhas.
-# Cenários planejados; nenhum comportamento foi executado ou aprovado nesta etapa.
+# Implementação e resultados em PLANO_AUTOMACAO.md; aprovação é manual.
 @parte2 @questao2_1 @pagamentoConfirmacao
 Funcionalidade: Revisão e conclusão da compra
   Como cliente
@@ -15,19 +15,18 @@ Funcionalidade: Revisão e conclusão da compra
   Contexto: Cliente autenticado
     Dado que o cliente está autenticado
 
-  # Planejado; aguardando implementação e validação.
-  @skip @E2E-08
+  # Automatizado; execução passou. Aguardando validação e aprovação do usuário.
+  @E2E-08
   Cenário: Apresentar os valores corretos na revisão do pedido
-    Dado que o cliente possui dois produtos distintos no carrinho
+    Dado que o cliente possui mais de um produto distinto no carrinho
     E informou dados válidos para a compra
     Quando revisa o pedido antes de concluí-lo
     Então o pedido apresenta os produtos escolhidos com suas quantidades e preços
     E o subtotal corresponde à soma dos valores dos produtos
-    # Nos futuros steps, calcular o imposto independentemente do valor exibido,
-    # usando a taxa esperada definida nos dados de teste.
     E o imposto corresponde à regra aplicada à compra
     E o total corresponde ao subtotal acrescido do imposto
-    E as informações do meio de pagamento são apresentadas
+    E o cartão previsto para a compra é identificado nas informações de pagamento
+    E a modalidade de entrega gratuita prevista para a compra é apresentada
 
   # Planejado; aguardando implementação e validação.
   @skip @E2E-09

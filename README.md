@@ -5,8 +5,9 @@ Requisitos do desafio: [desafio.md](desafio.md). Diretrizes: [AGENTS.md](AGENTS.
 
 ## Tecnologias
 
-- Node.js 22 ou 24 (ou 26+), conforme compatibilidade do Cypress instalado.
+- Node.js 22.13+ ou 24 (ou 26+), conforme compatibilidade do Cypress instalado.
 - Cypress 16.2.1.
+- `@faker-js/faker` 10.5.0, locale `pt_BR`, para dados sintéticos de checkout.
 - `@badeball/cypress-cucumber-preprocessor` para executar arquivos `.feature`.
 - esbuild e `@bahmutov/cypress-esbuild-preprocessor` para compilar os testes.
 
@@ -300,3 +301,120 @@ A tag `@carrinho` na funcionalidade é necessária para aplicar o hook After de 
 npm run test:parte2 -- --env tags="@carrinho and not @skip"
 npm run test:open -- --env tags="@carrinho and not @skip"
 ```
+
+### E2E-04 — dados válidos no checkout
+
+O login e a limpeza compartilhados ficam em `Specs/common.steps.js`, importado
+explicitamente pelos specs de carrinho e dados. Não há importação de um spec
+pelo outro nem duplicação do Given de autenticação. O hook After se aplica a
+`@cart or @CheckoutData`, inclusive após falhas, preservando o cache de sessão.
+
+O Contexto inclui Backpack e Bike Light, capturando nome/preço anunciados.
+`cy.startCheckout()` abre o carrinho e inicia identificação;
+`cy.submitCheckoutData(data)` preenche os três dados e avança. Seletores em
+`elements.js` e asserções do resumo nos steps, sem POM.
+
+`fixtures/checkout-data.js` exporta `generateCheckoutData()`, usando `fakerPT_BR`
+para nome, sobrenome e CEP de oito dígitos, gerados durante cada execução e sem
+seed fixa. Dados podem se repetir; o CEP é sintético, sem consulta postal real.
+A versão do Faker está fixada no manifesto e lockfile. Node 22 exige 22.13+;
+a CI permanece em Node 24. Os três exemplos de campos obrigatórios estão implementados
+e aguardam validação manual conjunta, autorizada pelo usuário.
+
+```bash
+npm run test:parte2 -- --env tags="@E2E-04 and not @skip"
+npm run test:parte2 -- --env tags="(@cart or @E2E-04) and not @skip"
+npm run test:open -- --env tags="@E2E-04 and not @skip"
+```
+
+Revisão manual: abrir `checkout-data.feature`, conferir dados gerados no
+preenchimento, avanço para a revisão, exatamente os dois produtos, quantidade 1
+e preços iguais aos anunciados. Não finaliza a compra nem valida pagamento.
+Resultados automatizados e aprovação manual são registrados no plano.
+
+### E2E-05 — campos obrigatórios
+
+Preservada a escrita do esquema com uma única tabela de Exemplos contendo nome,
+sobrenome e CEP, sob a tag compartilhada `@E2E-05`. O usuário autorizou
+explicitamente implementar e validar os três neste ciclo, como exceção ao fluxo
+de um caso por vez.
+
+Cada execução gera dados com Faker e deixa somente o campo indicado vazio.
+O command limpa os três campos, preenche valores não vazios e confere os valores
+antes de avançar. Os steps relacionam o dado obrigatório à propriedade e à
+mensagem esperada; um nome de campo desconhecido falha explicitamente.
+
+| Campo ausente | Mensagem exata esperada |
+| --- | --- |
+| nome | Error: First Name is required |
+| sobrenome | Error: Last Name is required |
+| CEP | Error: Postal Code is required |
+
+Todos verificam erro visível, URL da identificação, formulário visível e resumo
+ausente, com sessão e limpeza compartilhadas.
+
+```bash
+npm run test:parte2 -- --env tags="@E2E-05 and not @skip"
+npm run test:parte2 -- --env tags="(@cart or @CheckoutData) and not @skip"
+npm run test:open -- --env tags="@E2E-05 and not @skip"
+```
+
+Revisão manual: abrir `checkout-data.feature` e conferir, nos três exemplos,
+somente o campo indicado vazio, demais dados preenchidos, mensagem específica
+e permanência na identificação. Aprovação do esquema registrada separadamente
+dos resultados automatizados em `PLANO_AUTOMACAO.md`.
+
+### E2E-08 — valores, pagamento e entrega
+
+A fixture `fixtures/review-order.js` define produtos, quantidades, preços em
+centavos, taxa esperada desta massa em pontos-base, cartão e entrega. O catálogo
+é comparado à fixture, assim como os produtos na revisão. Mudanças intencionais
+na oferta exigem revisão desses dados esperados; o teste não aceita qualquer
+novo preço automaticamente.
+
+`utils/order-totals.js` calcula subtotal, imposto e total independentemente dos
+valores exibidos. Multiplica preço por quantidade em centavos e aplica a taxa,
+arredondando ao centavo mais próximo, com meio centavo para cima. A formatação
+em dólares ocorre apenas para comparar textos. Não há cobrança de frete nesta
+massa, cuja modalidade gratuita também é validada.
+
+| Verificação | Esperado nesta compra |
+| --- | --- |
+| Backpack / Bike Light / Bolt T-Shirt | $29.99 / $9.99 / $15.99, quantidade 1 por produto |
+| Subtotal | $55.97 |
+| Imposto | $4.48, taxa esperada de 8% |
+| Total | $60.45 |
+| Pagamento | SauceCard #31337 |
+| Entrega | Free Pony Express Delivery! |
+
+A taxa é uma expectativa explícita do caso, não uma regra fiscal geral.
+Asserções de negócio ficam no spec e a limpeza compartilhada inclui a tag
+`@pagamentoConfirmacao`. E2E-09, E2E-10 e PAG-01 permanecem com `@skip`.
+
+```bash
+npm run test:parte2 -- --env tags="@E2E-08 and not @skip"
+npm run test:parte2 -- --env tags="not @skip"
+npm run test:open -- --env tags="@E2E-08 and not @skip"
+```
+
+Para revisar, abrir `payment-confirmation.feature` e conferir produtos,
+quantidades, preços, subtotal, imposto, total, cartão e modalidade de entrega.
+O cenário termina na revisão: não comprova cobrança ou processamento financeiro
+em backend. Resultados e aprovação manual são registrados no plano.
+
+### Listas de produtos no E2E-08
+
+`cy.addProductsToCart(items)` recebe uma lista de `{ name, unitPriceCents, quantity }`,
+inclui cada produto sequencialmente pelo command individual e confere nome/preço
+anunciados contra a massa. Rejeita lista vazia, nomes duplicados e quantidade
+diferente de 1 antes das inclusões, pois o SauceDemo suporta uma unidade de
+cada produto distinto. A lista não tem limite fixo de dois produtos.
+
+`cy.validateProducts(items)` confere quantidade de itens, conjunto exato de nomes,
+quantidade por produto e preço esperado, sem depender da ordem exibida. O step
+Then identifica a intenção e delega essa validação ao command, conforme pedido
+do usuário. Os steps de totais, pagamento e entrega mantêm suas asserções.
+
+A massa atual tem Backpack, Bike Light e Bolt T-Shirt. O cálculo independente
+espera subtotal $55.97, imposto $4.48 e total $60.45. Reutilizados os seletores
+existentes; commands individuais e cenários de carrinho preservados.
