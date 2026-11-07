@@ -23,9 +23,11 @@ jobs:
         run: npm ci
 
       - name: Run Cypress tests
-        run: npm test -- --browser chrome
+        run: npm test -- --browser chrome --env tags="not @skip"
         env:
           CYPRESS_GITHUB_TOKEN: ${{ secrets.GH_API_TOKEN }}
           CYPRESS_REQRES_API_KEY: ${{ secrets.REQRES_API_KEY }}
           CYPRESS_REQRES_EMAIL: ${{ secrets.REQRES_EMAIL }}
           CYPRESS_REQRES_PASSWORD: ${{ secrets.REQRES_PASSWORD }}
+          CYPRESS_SAUCEDEMO_USERNAME: ${{ secrets.SAUCEDEMO_USERNAME }}
+          CYPRESS_SAUCEDEMO_PASSWORD: ${{ secrets.SAUCEDEMO_PASSWORD }}

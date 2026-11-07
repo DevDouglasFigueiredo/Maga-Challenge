@@ -21,8 +21,6 @@ Cypress.Commands.add('sauceDemoLogin', () => {
     }, {
       cacheAcrossSpecs: true,
       validate() {
-        // O host entrega a aplicação com HTTP 404 nesta rota da SPA.
-        // Validar o catálogo protegido impede aceitar erro ou redirecionamento ao login.
         cy.visit(`${baseUrl}/inventory.html`, { failOnStatusCode: false });
         cy.location('pathname').should('eq', '/inventory.html');
         cy.get(elements.container.inventory).should('be.visible');
