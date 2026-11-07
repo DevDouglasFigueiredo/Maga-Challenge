@@ -1,0 +1,27 @@
+{
+  "name": "desafio-magazord",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Testes API e E2E com Cypress e BDD para o desafio Magazord",
+  "scripts": {
+    "test": "cypress run",
+    "test:open": "cypress open",
+    "test:parte1": "cypress run --spec 'cypress/parte1-api/feature/**/*.feature'",
+    "test:parte2": "cypress run --spec 'parte2-e2e/**/*.feature'",
+    "test:parte3": "cypress run --spec 'parte3-arquivos/**/*.feature'"
+  },
+  "engines": {
+    "node": "^22.0.0 || ^24.0.0 || >=26.0.0"
+  },
+  "cypress-cucumber-preprocessor": {
+    "filterSpecs": true,
+    "omitFiltered": true
+  },
+  "devDependencies": {
+    "@badeball/cypress-cucumber-preprocessor": "28.0.1",
+    "@bahmutov/cypress-esbuild-preprocessor": "2.2.8",
+    "cypress": "16.2.1",
+    "cypress-plugin-api": "2.12.3",
+    "esbuild": "0.28.2"
+  }
+}
