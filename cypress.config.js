@@ -1,4 +1,5 @@
 const { defineConfig } = require('cypress');
+const path = require('node:path');
 const createBundler = require('@bahmutov/cypress-esbuild-preprocessor');
 const { addCucumberPreprocessorPlugin, afterRunHandler } = require('@badeball/cypress-cucumber-preprocessor');
 const { createEsbuildPlugin } = require('@badeball/cypress-cucumber-preprocessor/esbuild');
@@ -14,11 +15,13 @@ module.exports = defineConfig({
       qs: ['token', 'key', 'apiKey', 'api_key', 'secret', 'password'],
     },
     reqresBaseUrl: 'https://reqres.in',
+    sauceDemoBaseUrl: 'https://www.saucedemo.com',
   },
   e2e: {
     baseUrl: 'https://api.github.com',
     specPattern: [
       'cypress/parte1-api/feature/**/*.feature',
+      'cypress/parte2-e2e/questao2.1/feature/**/*.feature',
       'parte{2-e2e,3-arquivos}/**/testes/**/*.feature',
     ],
     supportFile: 'cypress/support/e2e.js',
@@ -33,9 +36,19 @@ module.exports = defineConfig({
         config.expose.tags = config.env.tags;
       }
       await addCucumberPreprocessorPlugin(on, config, { omitAfterRunHandler: true });
-      on('file:preprocessor', createBundler({
-        plugins: [createEsbuildPlugin(config)],
-      }));
+      on('file:preprocessor', (file) => {
+        // Resolver pelo nome da feature mantém steps homônimos de suítes distintas isolados.
+        const stepDefinitions = [path.join(
+          path.dirname(file.filePath), '..', '{specs,Specs}',
+          `${path.basename(file.filePath, '.feature')}.cy.js`,
+        )];
+        return createBundler({
+          plugins: [createEsbuildPlugin({
+            ...config,
+            expose: { ...config.expose, stepDefinitions },
+          })],
+        })(file);
+      });
 
       const rateLimitServer = await startRateLimitServer();
       config.expose.githubRateLimitMockUrl = rateLimitServer.url;
