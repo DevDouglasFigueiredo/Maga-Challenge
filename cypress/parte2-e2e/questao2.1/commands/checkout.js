@@ -1,5 +1,31 @@
 import { elements } from '../elements';
 
+Cypress.Commands.add('finishCheckout', () => {
+  cy.get(elements.btn.finish).click();
+  return cy.get(elements.container.checkoutComplete).should('be.visible');
+});
+
+Cypress.Commands.add('validateOrderConfirmation', () => {
+  cy.location('pathname').should('eq', '/checkout-complete.html');
+  cy.get(elements.container.checkoutComplete).should('be.visible');
+  cy.get(elements.text.confirmationTitle).should('be.visible')
+    .and('have.text', 'Thank you for your order!');
+  return cy.get(elements.text.confirmationMessage).should('be.visible')
+    .and('have.text', 'Your order has been dispatched, and will arrive just as fast as the pony can get there!');
+});
+
+Cypress.Commands.add('validateNoOrderConfirmation', () => {
+  cy.get(elements.container.checkoutSummary).should('not.exist');
+  cy.get(elements.container.checkoutComplete).should('not.exist');
+  cy.get(elements.text.confirmationTitle).should('not.exist');
+  return cy.get(elements.text.confirmationMessage).should('not.exist');
+});
+
+Cypress.Commands.add('cancelCheckout', () => {
+  cy.get(elements.btn.cancel).click();
+  return cy.get(elements.container.inventory).should('be.visible');
+});
+
 Cypress.Commands.add('startCheckout', () => {
   cy.openCart();
   cy.get(elements.btn.checkout).click();

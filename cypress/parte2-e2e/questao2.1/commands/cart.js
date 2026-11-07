@@ -77,3 +77,9 @@ Cypress.Commands.add('removeProductFromCart', (productName) => {
     .parents(elements.container.item)
     .find(elements.btn.removeFromCart).click();
 });
+
+Cypress.Commands.add('emptyCart', () => {
+  cy.get(elements.text.cartBadge).should('not.exist');
+  cy.openCart();
+  cy.get(elements.container.item).should('not.exist');
+});

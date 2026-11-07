@@ -1,12 +1,6 @@
 # language: pt
 
-# Questão 2.1 — revisão, conclusão e confirmação do pedido; apoio à questão 2.1.b.
-# Alvo previsto de E2E-08 a E2E-10: SauceDemo público, sem simulação da suíte.
-# O pagamento demonstrativo do site não comprova cobrança ou pedido em backend.
-# Automação futura de E2E-10: login até conclusão, com dados dinâmicos e
-# limpeza de cookies e localStorage após cada teste, inclusive em falhas.
-# Implementação e resultados em PLANO_AUTOMACAO.md; aprovação é manual.
-@parte2 @questao2_1 @pagamentoConfirmacao
+@paymentConfirmation
 Funcionalidade: Revisão e conclusão da compra
   Como cliente
   Quero revisar e concluir minha compra
@@ -15,7 +9,6 @@ Funcionalidade: Revisão e conclusão da compra
   Contexto: Cliente autenticado
     Dado que o cliente está autenticado
 
-  # Automatizado; execução passou. Aguardando validação e aprovação do usuário.
   @E2E-08
   Cenário: Apresentar os valores corretos na revisão do pedido
     Dado que o cliente possui mais de um produto distinto no carrinho
@@ -28,8 +21,7 @@ Funcionalidade: Revisão e conclusão da compra
     E o cartão previsto para a compra é identificado nas informações de pagamento
     E a modalidade de entrega gratuita prevista para a compra é apresentada
 
-  # Planejado; aguardando implementação e validação.
-  @skip @E2E-09
+  @E2E-09
   Cenário: Cancelar a compra na revisão preservando o carrinho
     Dado que o cliente está revisando um pedido com produtos e dados válidos
     Quando cancela a compra durante a revisão do pedido
@@ -37,16 +29,22 @@ Funcionalidade: Revisão e conclusão da compra
     E não recebe confirmação de pedido
     E o carrinho preserva os produtos escolhidos
 
-  # Planejado; aguardando implementação e validação.
-  @skip @E2E-10
-  Cenário: Confirmar a compra completa de dois produtos
-    Dado que o cliente deseja comprar dois produtos distintos
+  @E2E-10
+  Cenário: Confirmar a compra completa de produtos
+    Dado que o cliente possui mais de um produto distinto no carrinho
+    Quando realiza a compra desses produtos com dados válidos
+    Então recebe a confirmação de que o pedido foi concluído
+    E o carrinho fica vazio
+
+  # Proposta documental: SauceDemo não oferece opção para o usuario comprar mais de uma unidade de um mesmo produto.
+  @skip
+  Cenário: Efetuar a compra de mais de uma unidade de um mesmo produto
+    Dado que o cliente possui mais de uma unidade de um mesmo produto no carrinho
     Quando realiza a compra desses produtos com dados válidos
     Então recebe a confirmação de que o pedido foi concluído
     E o carrinho fica vazio
 
   # Proposta documental: SauceDemo não oferece autorização ou recusa financeira.
-  # Não implementado, simulado, executado ou aprovado; manter @skip neste alvo.
   @skip @PAG-01
   Cenário: Não confirmar o pedido quando o pagamento for recusado
     Dado que o cliente possui uma compra válida pronta para pagamento

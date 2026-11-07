@@ -389,7 +389,7 @@ massa, cuja modalidade gratuita também é validada.
 
 A taxa é uma expectativa explícita do caso, não uma regra fiscal geral.
 Asserções de negócio ficam no spec e a limpeza compartilhada inclui a tag
-`@pagamentoConfirmacao`. E2E-09, E2E-10 e PAG-01 permanecem com `@skip`.
+`@paymentConfirmation`. PAG-01 permanece com `@skip`, assim como os cupons.
 
 ```bash
 npm run test:parte2 -- --env tags="@E2E-08 and not @skip"
@@ -418,3 +418,44 @@ do usuário. Os steps de totais, pagamento e entrega mantêm suas asserções.
 A massa atual tem Backpack, Bike Light e Bolt T-Shirt. O cálculo independente
 espera subtotal $55.97, imposto $4.48 e total $60.45. Reutilizados os seletores
 existentes; commands individuais e cenários de carrinho preservados.
+
+### E2E-09 — cancelar na revisão preservando o carrinho
+
+Prepara a revisão com os três produtos da fixture e dados Faker. Confere os
+produtos antes de cancelar e usa `cy.cancelCheckout()` para retornar ao catálogo.
+Valida URL, catálogo visível e ausência de resumo e confirmação. Depois confere
+a contagem e abre o carrinho para validar os mesmos produtos, quantidades e
+preços com `cy.validateProducts()`. Reutiliza sessão e limpeza compartilhadas.
+
+```bash
+npm run test:parte2 -- --env tags="@E2E-09 and not @skip"
+npm run test:open -- --env tags="@E2E-09 and not @skip"
+```
+
+Para revisar, abrir `payment-confirmation.feature` e conferir revisão,
+cancelamento, retorno ao catálogo e carrinho preservado. A ausência de
+confirmação é verificada na interface; não comprova estado de pedido em backend.
+Resultados e aprovação manual ficam no plano de acompanhamento.
+
+### E2E-10 — confirmar compra completa de produtos
+
+Percorre autenticação por sessão, inclusão dos três produtos da fixture,
+identificação com dados Faker, revisão e finalização. Antes de finalizar, confere
+produtos, quantidades e preços. Os cálculos detalhados continuam no E2E-08.
+
+`cy.finishCheckout()` finaliza e aguarda a conclusão. O command
+`cy.validateOrderConfirmation()` confere a URL `/checkout-complete.html`, a
+conclusão visível e os textos exatos de agradecimento e despacho. Depois o teste
+verifica ausência da contagem, abre o carrinho e confirma ausência de produtos.
+A limpeza compartilhada ocorre também em falhas.
+
+```bash
+npm run test:parte2 -- --env tags="@E2E-10 and not @skip"
+npm run test:parte2 -- --env tags="not @skip"
+npm run test:open -- --env tags="@E2E-10 and not @skip"
+```
+
+Para revisar, abrir `payment-confirmation.feature` e conferir dados gerados,
+três produtos na revisão, confirmação após finalizar e carrinho vazio.
+A confirmação demonstra comportamento da interface do SauceDemo; não comprova
+cobrança, envio ou pedido em backend. Resultados e aprovação manual ficam no plano.

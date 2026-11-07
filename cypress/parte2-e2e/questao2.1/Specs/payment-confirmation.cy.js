@@ -9,6 +9,23 @@ import '../commands/checkout';
 
 const expectedTotals = calculateOrderTotals(reviewOrder.items, reviewOrder.taxRateBasisPoints);
 
+When('realiza a compra desses produtos com dados válidos', () => {
+  cy.startCheckout();
+  cy.submitCheckoutData(generateCheckoutData());
+  cy.location('pathname').should('eq', '/checkout-step-two.html');
+  cy.get(elements.container.checkoutSummary).should('be.visible');
+  cy.validateProducts(reviewOrder.items);
+  cy.finishCheckout();
+});
+
+Then('recebe a confirmação de que o pedido foi concluído', () => {
+  cy.validateOrderConfirmation();
+});
+
+Then('o carrinho fica vazio', () => {
+  cy.emptyCart();
+});
+
 Given('que o cliente possui mais de um produto distinto no carrinho', () => {
   expect(reviewOrder.items.length, 'mais de um produto escolhido').to.be.greaterThan(1);
   cy.addProductsToCart(reviewOrder.items);
@@ -17,6 +34,35 @@ Given('que o cliente possui mais de um produto distinto no carrinho', () => {
 Given('informou dados válidos para a compra', () => {
   cy.startCheckout();
   cy.submitCheckoutData(generateCheckoutData());
+});
+
+Given('que o cliente está revisando um pedido com produtos e dados válidos', () => {
+  cy.addProductsToCart(reviewOrder.items);
+  cy.startCheckout();
+  cy.submitCheckoutData(generateCheckoutData());
+  cy.location('pathname').should('eq', '/checkout-step-two.html');
+  cy.get(elements.container.checkoutSummary).should('be.visible');
+  cy.validateProducts(reviewOrder.items);
+});
+
+When('cancela a compra durante a revisão do pedido', () => {
+  cy.cancelCheckout();
+});
+
+Then('retorna ao catálogo de produtos', () => {
+  cy.location('pathname').should('eq', '/inventory.html');
+  cy.get(elements.container.inventory).should('be.visible');
+});
+
+Then('não recebe confirmação de pedido', () => {
+  cy.validateNoOrderConfirmation();
+});
+
+Then('o carrinho preserva os produtos escolhidos', () => {
+  cy.get(elements.text.cartBadge).should('be.visible')
+    .and('have.text', String(reviewOrder.items.length));
+  cy.openCart();
+  cy.validateProducts(reviewOrder.items);
 });
 
 When('revisa o pedido antes de concluí-lo', () => {

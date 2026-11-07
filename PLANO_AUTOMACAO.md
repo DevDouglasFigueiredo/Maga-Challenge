@@ -857,3 +857,130 @@ Gherkin e associação feature/spec conferidos: 14 casos, oito habilitados e tod
 cobertos pela limpeza. git diff --check passou. Sem implementação de E2E-09.
 Commit solicitado pelo usuário; excluídos AGENTS.md, desafio.md, credenciais
 locais e artefatos Playwright, conforme decisão anterior.
+
+## E2E-09 — cancelar na revisão preservando o carrinho
+
+Estado: aguardando validação e aprovação explícita do usuário.
+Alvo: SauceDemo público, sem simulação. Questão 2.1, alternativa de cancelamento.
+
+- Dado um pedido em revisão com os três produtos de review-order e dados Faker,
+  validar produtos, quantidades e preços antes da ação.
+- Quando cancelar, reutilizar cy.cancelCheckout(), com seletor existente e
+  espera por catálogo visível, sem espera fixa.
+- Então retornar a /inventory.html, sem resumo ou confirmação; conferir contagem
+  e abrir carrinho para validar produtos exatos, quantidades e preços preservados.
+- Autenticação por sessão e hook de limpeza compartilhado preservados, inclusive
+  em falhas. Removido @skip somente de E2E-09; alterações manuais preservadas.
+
+### Execuções reais
+
+```bash
+env -u ELECTRON_RUN_AS_NODE npm run test:parte2 -- --env tags="@E2E-09 and not @skip"
+env -u ELECTRON_RUN_AS_NODE npm run test:parte2 -- --env tags="not @skip"
+```
+
+- Isolado: 1 passou; zero falhas, pendentes ou ignorados; saída 0.
+- Regressão: 9 passaram (carrinho 3, identificação 4, revisão/cancelamento 2);
+  zero falhas, pendentes ou ignorados; saída 0.
+- Cypress 16.2.1, Electron 146 headless, Node.js 24.22.0.
+- Sintaxe JavaScript e Gherkin conferidas: 14 casos preservados, nove habilitados,
+  todos com autenticação herdada e tags abrangidas pela limpeza compartilhada.
+- git diff --check passou. Casos com @skip não contam como cobertura executada.
+
+### Revisão manual
+
+```bash
+npm run test:open -- --env tags="@E2E-09 and not @skip"
+```
+
+Abrir payment-confirmation.feature. Conferir três produtos na revisão, cancelar,
+verificar retorno ao catálogo e ausência de confirmação; conferir carrinho com
+Backpack, Bike Light e Bolt T-Shirt, quantidade 1 e preços $29.99, $9.99 e $15.99.
+A ausência de confirmação na interface não comprova estado de pedido em backend.
+Aguardar aprovação explícita antes de implementar E2E-10.
+
+### Refatoração E2E-09 — ausência de confirmação
+
+Conforme pedido do usuário, as quatro verificações de ausência de resumo,
+conclusão, título e mensagem foram movidas para cy.validateNoOrderConfirmation()
+em commands/checkout.js. O Then chama somente o command; seletores e condições
+preservados. Estado: aguardando revisão do usuário.
+
+Reexecutados os mesmos comandos de validação do E2E-09: isolado com 1 passando
+e regressão com 9 passando, zero falhas, pendentes ou ignorados; saída 0 em ambos.
+Sintaxe dos dois arquivos JavaScript e git diff --check passaram.
+
+## E2E-10 — confirmar compra completa de produtos
+
+E2E-09 e sua refatoração: aprovados pelo usuário ao autorizar o prosseguimento
+e a implementação deste plano. Histórico das execuções anteriores preservado.
+E2E-10: aguardando validação e aprovação explícita do usuário.
+Questão 2.1: fluxo completo, dados dinâmicos, confirmação e limpeza.
+Alvo: SauceDemo público, sem simulação.
+
+- Dado cliente autenticado por sessão com os três produtos distintos da fixture.
+- Quando realiza a compra, gerar dados Faker, iniciar identificação e avançar;
+  conferir revisão visível, URL e produtos antes de finalizar.
+- Então validar URL /checkout-complete.html, conclusão visível e textos exatos:
+  Thank you for your order!
+  Your order has been dispatched, and will arrive just as fast as the pony can get there!
+- Depois verificar ausência da contagem, abrir carrinho e confirmar que não há
+  produtos. A confirmação é validada antes dessa navegação.
+- Commands finishCheckout e validateOrderConfirmation usam seletores existentes.
+  Sessão e limpeza compartilhadas preservadas; E2E-08 mantém cálculos detalhados.
+- Título atualizado para produtos, sem restringir a dois. Removido @skip somente
+  de E2E-10; cupom e recusa financeira continuam documentais e ignorados.
+
+### Execuções reais
+
+```bash
+env -u ELECTRON_RUN_AS_NODE npm run test:parte2 -- --env tags="@E2E-10 and not @skip"
+env -u ELECTRON_RUN_AS_NODE npm run test:parte2 -- --env tags="not @skip"
+```
+
+- Isolado: 1 passou; zero falhas, pendentes ou ignorados; saída 0.
+- Regressão: 10 passaram (carrinho 3, identificação 4, revisão/conclusão 3);
+  zero falhas, pendentes ou ignorados; saída 0.
+- Cypress 16.2.1, Electron 146 headless, Node.js 24.22.0.
+- Sintaxe JavaScript e Gherkin conferidas: 14 casos preservados, dez habilitados,
+  todos com autenticação herdada e tags abrangidas pela limpeza compartilhada.
+- git diff --check passou. Casos ignorados não contam como cobertura executada.
+
+### Revisão manual
+
+```bash
+npm run test:open -- --env tags="@E2E-10 and not @skip"
+```
+
+Abrir payment-confirmation.feature. Conferir dados gerados, Backpack, Bike Light
+e Bolt T-Shirt na revisão, confirmação após finalizar e carrinho vazio.
+Confirmação limitada à interface: não comprova cobrança, envio ou pedido em backend.
+Aguardar aprovação explícita antes de outra implementação.
+
+
+## Encerramento do ciclo da Parte 2 — aprovação do usuário
+
+Usuário revisou e aprovou E2E-10 e autorizou commit e push. E2E-10 aprovado;
+trabalho da Parte 2 encerrado por ora, preservando limitações documentadas.
+
+Revisão final preservou mudanças manuais: step de carrinho vazio delega a
+cy.emptyCart(), feature usa @paymentConfirmation e inclui proposta documental
+ignorada para múltiplas unidades do mesmo produto. Corrigida grafia Cenário
+para compilação Gherkin e ajustado hook compartilhado à tag atual, garantindo
+limpeza também nos três cenários de revisão/conclusão. Removida linha vazia
+extra ao final de cart.js. Nenhum novo cenário foi habilitado.
+
+Sintaxe JavaScript e Gherkin conferidas: 15 casos no catálogo, dez habilitados,
+cinco ignorados. Autenticação herdada e tags do hook conferidas; ignorados não
+contam como cobertura executada. Histórico anterior de 14 casos preservado.
+
+Verificação final antes do commit:
+
+```bash
+env -u ELECTRON_RUN_AS_NODE npm run test:parte2 -- --env tags="not @skip"
+```
+
+Resultado: 10 passaram, zero falhas, pendentes ou ignorados na seleção; saída 0.
+Cypress 16.2.1, Electron 146 headless, Node.js 24.22.0. git diff --check passou.
+Commit inclui somente implementação e documentação revisadas; excluídos
+AGENTS.md, desafio.md, .playwright-mcp/ e credenciais locais ignoradas.
