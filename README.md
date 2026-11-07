@@ -193,8 +193,8 @@ Em 07/11/2026, API-09 passou isoladamente e a regressão das APIs 1 e 2 teve
 
 ## Organização e BDD
 
-A parte 1 mantém as features em `cypress/parte1-api/feature/` e os passos
-em `cypress/parte1-api/specs/`. O preprocessor associa cada feature ao arquivo de steps com o mesmo nome,
+A parte 1 mantém as features em `cypress/parte1-api/questao1.1/feature/` e os passos
+em `cypress/parte1-api/questao1.1/specs/`. O preprocessor associa cada feature ao arquivo de steps com o mesmo nome,
 conforme a resolução configurada em `cypress.config.js`.
 A Parte 2 mantém features em `cypress/parte2-e2e/questao2.1/feature/`,
 steps em `Specs/`, commands em `commands/` e seletores em `elements.js`.

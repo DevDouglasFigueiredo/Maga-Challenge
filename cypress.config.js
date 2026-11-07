@@ -3,7 +3,7 @@ const path = require('node:path');
 const createBundler = require('@bahmutov/cypress-esbuild-preprocessor');
 const { addCucumberPreprocessorPlugin, afterRunHandler } = require('@badeball/cypress-cucumber-preprocessor');
 const { createEsbuildPlugin } = require('@badeball/cypress-cucumber-preprocessor/esbuild');
-const { startRateLimitServer } = require('./cypress/parte1-api/mocks/rate-limit-server');
+const { startRateLimitServer } = require('./cypress/parte1-api/questao1.1/mocks/rate-limit-server');
 
 module.exports = defineConfig({
   expose: {
@@ -20,7 +20,7 @@ module.exports = defineConfig({
   e2e: {
     baseUrl: 'https://api.github.com',
     specPattern: [
-      'cypress/parte1-api/feature/**/*.feature',
+      'cypress/parte1-api/questao1.1/feature/**/*.feature',
       'cypress/parte2-e2e/questao2.1/feature/**/*.feature',
       'parte{2-e2e,3-arquivos}/**/testes/**/*.feature',
     ],

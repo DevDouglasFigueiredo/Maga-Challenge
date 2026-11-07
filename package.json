@@ -6,7 +6,7 @@
   "scripts": {
     "test": "cypress run",
     "test:open": "cypress open",
-    "test:parte1": "cypress run --spec 'cypress/parte1-api/feature/**/*.feature'",
+    "test:parte1": "cypress run --spec 'cypress/parte1-api/questao1.1/feature/**/*.feature'",
     "test:parte2": "cypress run --spec 'cypress/parte2-e2e/questao2.1/feature/**/*.feature'",
     "test:parte3": "cypress run --spec 'parte3-arquivos/**/*.feature'"
   },

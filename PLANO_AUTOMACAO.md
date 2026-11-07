@@ -3,7 +3,7 @@
 Regra: implementar um cenário, executar com sucesso e aguardar revisão,
 execução manual e aprovação explícita do usuário antes de iniciar o próximo.
 Os passos Dado/Quando/Então aprovados estão em
-[api-1-rate-limiting.feature](cypress/parte1-api/feature/api-1-rate-limiting.feature).
+[api-1-rate-limiting.feature](cypress/parte1-api/questao1.1/feature/api-1-rate-limiting.feature).
 
 | Ordem | Cenário | Requisito | Objetivo e resultado esperado | Execução | Estado |
 | --- | --- | --- | --- | --- | --- |
@@ -50,7 +50,7 @@ saída 0, Cypress 16.2.1, Node.js 24.22.0 e Electron headless.
 O comando remove apenas da execução a variável herdada `ELECTRON_RUN_AS_NODE`,
 que impedia a inicialização do Electron neste ambiente. Não altera os testes.
 
-Decisões de configuração: localizar os passos em `cypress/parte1-api/specs/`
+Decisões de configuração: localizar os passos em `cypress/parte1-api/questao1.1/specs/`
 conforme `stepDefinitions`; expor o filtro público `tags` do argumento `--env`
 para compatibilidade com Cypress 16; filtrar specs e omitir cenários fora do filtro.
 Nenhuma credencial é necessária para API-01.
@@ -984,3 +984,21 @@ Resultado: 10 passaram, zero falhas, pendentes ou ignorados na seleção; saída
 Cypress 16.2.1, Electron 146 headless, Node.js 24.22.0. git diff --check passou.
 Commit inclui somente implementação e documentação revisadas; excluídos
 AGENTS.md, desafio.md, .playwright-mcp/ e credenciais locais ignoradas.
+
+## Reorganização da Parte 1 — questao1.1
+
+Preservada a estrutura movida pelo usuário para cypress/parte1-api/questao1.1/.
+Corrigidos require do servidor de simulação na configuração, script test:parte1
+e referências de documentação. A descoberta das features já havia sido ajustada
+pelo usuário; resolução dos steps por feature preservada. Imports relativos de
+specs, helpers e mocks conferidos: todos resolvidos, sem alteração necessária.
+
+```bash
+env -u ELECTRON_RUN_AS_NODE npm run test:parte1
+env -u ELECTRON_RUN_AS_NODE npm run test:parte2 -- --env tags="not @skip"
+```
+
+Resultados: Parte 1 com 5 passando; Parte 2 com 10 passando. Zero falhas,
+pendentes ou ignorados nas seleções; saída 0 em ambas. Cypress 16.2.1,
+Electron headless, Node.js 24.22.0. Sintaxe da configuração e git diff --check
+passaram. Sem alteração de regras ou novos cenários.
