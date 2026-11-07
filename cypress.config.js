@@ -7,8 +7,16 @@ const { startRateLimitServer } = require('./cypress/parte1-api/mocks/rate-limit-
 module.exports = defineConfig({
   expose: {
     hideCredentials: true,
+    hideCredentialsOptions: {
+      auth: ['user', 'username', 'pass', 'password', 'bearer'],
+      headers: ['authorization', 'cookie', 'set-cookie', 'password', 'username', 'token', 'api-key', 'x-api-key', 'apiKey'],
+      body: ['email', 'pass', 'password', 'token', 'secret', 'apiKey', 'api_key'],
+      qs: ['token', 'key', 'apiKey', 'api_key', 'secret', 'password'],
+    },
+    reqresBaseUrl: 'https://reqres.in',
   },
   e2e: {
+    baseUrl: 'https://api.github.com',
     specPattern: [
       'cypress/parte1-api/feature/**/*.feature',
       'parte{2-e2e,3-arquivos}/**/testes/**/*.feature',
@@ -24,7 +32,6 @@ module.exports = defineConfig({
       if (config.env.tags !== undefined) {
         config.expose.tags = config.env.tags;
       }
-      // Combina o encerramento do servidor com o evento original do Cucumber.
       await addCucumberPreprocessorPlugin(on, config, { omitAfterRunHandler: true });
       on('file:preprocessor', createBundler({
         plugins: [createEsbuildPlugin(config)],
@@ -32,6 +39,7 @@ module.exports = defineConfig({
 
       const rateLimitServer = await startRateLimitServer();
       config.expose.githubRateLimitMockUrl = rateLimitServer.url;
+      config.expose.tokenExpirationMockUrl = rateLimitServer.url;
 
       on('after:run', async (results) => {
         try {

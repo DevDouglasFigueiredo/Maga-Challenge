@@ -2,17 +2,16 @@ import { Given, When, Then } from '@badeball/cypress-cucumber-preprocessor';
 import 'cypress-plugin-api';
 import { isRateLimitExceeded } from '../utils/rate-limit-helper';
 
-const githubApiUrl = 'https://api.github.com';
 const millisecondsPerSecond = 1000;
 const rateLimitWindowSeconds = 3600;
 const resetToleranceSeconds = 60;
 
 Given('que existe cota disponível para consultas públicas sem autenticação', function () {
-  this.apiBaseUrl = githubApiUrl;
+  this.apiBaseUrl = '';
 
   cy.api({
     method: 'GET',
-    url: 'https://api.github.com/rate_limit',
+    url: '/rate_limit',
     failOnStatusCode: false,
   }).then(({ status, body }) => {
     expect(status, 'consulta da cota pública').to.equal(200);
@@ -43,34 +42,19 @@ Given('que possuo autenticação válida no GitHub com cota padrão de {int} con
 });
 
 Given('existe cota disponível para consultas autenticadas', function () {
-  cy.env(['GITHUB_TOKEN'], { log: false }).then(({ GITHUB_TOKEN: token }) => {
-    cy.api({
-      method: 'GET',
-      url: 'https://api.github.com/rate_limit',
-      headers: { authorization: `Bearer ${token}` },
-      failOnStatusCode: false,
-      log: false,
-    }).then(({ status, body }) => {
-      expect(status, 'consulta autenticada da cota; 401 indica token inválido ou expirado').to.equal(200);
-      expect(body.resources.core.limit, 'limite com autenticação').to.equal(this.authenticatedRateLimit);
-      expect(body.resources.core.remaining, 'cota autenticada disponível para executar o cenário')
-        .to.be.greaterThan(0);
-    });
+  cy.githubAuthenticatedRequest('/rate_limit').then(({ status, body }) => {
+    expect(status, 'consulta autenticada da cota; 401 indica token inválido ou expirado').to.equal(200);
+    expect(body.resources.core.limit, 'limite com autenticação').to.equal(this.authenticatedRateLimit);
+    expect(body.resources.core.remaining, 'cota autenticada disponível para executar o cenário')
+      .to.be.greaterThan(0);
   });
 });
 
 When('consulto o usuário público {string} com minha autenticação', function (userLogin) {
   this.userLogin = userLogin;
 
-  cy.env(['GITHUB_TOKEN'], { log: false }).then(({ GITHUB_TOKEN: token }) => {
-    cy.api({
-      method: 'GET',
-      url: `https://api.github.com/users/${encodeURIComponent(userLogin)}`,
-      headers: { authorization: `Bearer ${token}` },
-      failOnStatusCode: false,
-      log: false,
-    }).as('githubResponse');
-  });
+  cy.githubAuthenticatedRequest(`/users/${encodeURIComponent(userLogin)}`)
+    .as('githubResponse');
 });
 
 Then('recebo os dados do usuário solicitado', function () {
