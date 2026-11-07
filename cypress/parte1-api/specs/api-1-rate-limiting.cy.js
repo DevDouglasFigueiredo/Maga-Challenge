@@ -1,11 +1,15 @@
 import { Given, When, Then } from '@badeball/cypress-cucumber-preprocessor';
 import 'cypress-plugin-api';
+import { isRateLimitExceeded } from '../utils/rate-limit-helper';
 
+const githubApiUrl = 'https://api.github.com';
 const millisecondsPerSecond = 1000;
 const rateLimitWindowSeconds = 3600;
 const resetToleranceSeconds = 60;
 
-Given('que existe cota disponível para consultas públicas sem autenticação', () => {
+Given('que existe cota disponível para consultas públicas sem autenticação', function () {
+  this.apiBaseUrl = githubApiUrl;
+
   cy.api({
     method: 'GET',
     url: 'https://api.github.com/rate_limit',
@@ -23,7 +27,7 @@ When('consulto o usuário público {string}', function (userLogin) {
 
   cy.api({
     method: 'GET',
-    url: `https://api.github.com/users/${encodeURIComponent(userLogin)}`,
+    url: `${this.apiBaseUrl}/users/${encodeURIComponent(userLogin)}`,
     failOnStatusCode: false,
   }).as('githubResponse');
 });
@@ -107,5 +111,30 @@ Then('a quantidade restante está dentro do limite permitido', () => {
 
     expect(Number.isSafeInteger(remaining), 'saldo inteiro').to.equal(true);
     expect(remaining, 'saldo após a consulta').to.be.within(0, limit - 1);
+  });
+});
+
+Given('que a cota de consultas da janela atual está esgotada', function () {
+  const mockUrl = Cypress.expose('githubRateLimitMockUrl');
+  expect(mockUrl, 'endereço da simulação local').to.match(/^http:\/\/127\.0\.0\.1:\d+$/);
+  this.apiBaseUrl = mockUrl;
+});
+
+Then('a consulta é recusada por esgotamento da cota', () => {
+  cy.get('@githubResponse').then(({ status, body }) => {
+    expect(status, 'consulta recusada').to.equal(403);
+    expect(body.message, 'motivo da recusa').to.equal('API rate limit exceeded');
+  });
+});
+
+Then('sou informado de que não restam consultas nessa janela', () => {
+  cy.get('@githubResponse').then(({ headers }) => {
+    expect(headers, 'header de saldo disponível').to.have.property('x-ratelimit-remaining', '0');
+  });
+});
+
+Then('identifico que o limite de consultas foi atingido', () => {
+  cy.get('@githubResponse').then((response) => {
+    expect(isRateLimitExceeded(response), 'identificação do esgotamento da cota').to.equal(true);
   });
 });
