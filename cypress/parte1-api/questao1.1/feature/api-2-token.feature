@@ -12,6 +12,13 @@ Funcionalidade: Autenticação com token
     Quando realizo login e consulto um usuário
     Então recebo os dados do usuário solicitado
 
+  @API-09
+  Cenário: Reutilizar autenticação em uma nova consulta
+    Dado que já realizei uma consulta com autenticação válida
+    Quando consulto novamente os dados de um usuário
+    Então recebo os dados do usuário solicitado
+    E utilizo a autenticação original sem realizar novo login
+
   @API-08
   Cenário: Tratar o erro de autenticação após a expiração do token
     Dado que possuo um token com validade simulada de 2 minutos

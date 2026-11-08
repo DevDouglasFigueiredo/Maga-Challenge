@@ -8,7 +8,7 @@
 ## 1.1.b) Como você implementaria um mecanismo simples para obter e reutilizar um token de autenticação entre os testes, evitando fazer login a cada teste?
 
 Centralizei a autenticação no comando `cy.reqresLogin()`, em
-[`commands.js`](../support/commands.js), usando `cy.session()` para salvar e
+[`commands.js`](../../support/commands.js), usando `cy.session()` para salvar e
 restaurar o estado de autenticação. Assim, cada teste pode chamar o comando
 sem depender da execução de um teste anterior.
 
@@ -33,6 +33,15 @@ O cache fica limitado ao mesmo spec, sem `cacheAcrossSpecs`, e considera uma
 única conta configurada por execução. Ao trocar credenciais no modo interativo,
 é necessário limpar as sessões salvas.
 
+O cenário API-09 exercita a restauração dentro de um único teste independente.
+Limpa o cache antes da preparação, realiza login e uma primeira consulta,
+remove o cookie ativo e confirma sua ausência. Ao chamar `cy.reqresLogin()`
+novamente, verifica que o token original foi restaurado e enviado na nova
+consulta. Um spy observa as chamadas reais de `cy.api()`, sem substituir
+respostas, e a asserção exige exatamente um POST de login nas duas chamadas.
+Comparar somente o token seria insuficiente, pois um novo login poderia
+retornar o mesmo valor.
+
 **Limitação da implementação:** `validate()` verifica apenas a presença de um
 token não vazio. Como o endpoint clássico de usuários é público, uma resposta
 200 não comprova que o token continua válido. Em uma API com recurso protegido,
@@ -54,7 +63,7 @@ descartado (`token: null`), `requiresAuthentication: true` e a mensagem
 o estado recebido. O teste verifica a resposta HTTP e o resultado desse
 tratamento, sem realizar um novo login automaticamente e esconder a recusa.
 
-No API-09, a expiração é controlada por um servidor HTTP local e uma fixture
+No API-08, a expiração é controlada por um servidor HTTP local e uma fixture
 com token sintético e validade de dois minutos. Primeiro, confirmo uma consulta
 200 antes do vencimento. Depois, avanço o relógio com `cy.clock()` e `cy.tick()`
 até o instante exato de expiração, sem aguardar dois minutos reais. O horário
@@ -66,8 +75,8 @@ resposta 401. As asserções verificam status, código e mensagem de expiração
 descarte do token e indicação de nova autenticação.
 
 **Limites:** esse cenário comprova o tratamento da expiração simulada, não
-a expiração do token no ReqRes público. O estado tratado no API-09 é independente
-do cookie e do cache de `cy.session()` usados no API-07; o helper não limpa esse
+a expiração do token no ReqRes público. O estado tratado no API-08 é independente
+do cookie e do cache de `cy.session()` usados no API-07 e no API-09; o helper não limpa esse
 cache nem implementa renovação automática. Em uma integração com expiração real,
 também seria necessário invalidar a credencial armazenada e validar a sessão
 num recurso protegido antes de reutilizá-la.

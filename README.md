@@ -57,9 +57,9 @@ Preencha os valores conforme os testes que pretende executar. Se o arquivo já e
 | Variável | Uso | Necessária para |
 | --- | --- | --- |
 | `GITHUB_TOKEN` | Token pessoal GitHub válido, com a cota padrão esperada pelo teste | Parte 1: `@API-02` |
-| `REQRES_API_KEY` | Chave de API válida do ReqRes | Parte 1: `@API-07` |
-| `REQRES_EMAIL` | Email de login indicado no desafio | Parte 1: `@API-07` |
-| `REQRES_PASSWORD` | Senha correspondente ao login do ReqRes | Parte 1: `@API-07` |
+| `REQRES_API_KEY` | Chave de API válida do ReqRes | Parte 1: `@API-07` e `@API-09` |
+| `REQRES_EMAIL` | Email de login indicado no desafio | Parte 1: `@API-07` e `@API-09` |
+| `REQRES_PASSWORD` | Senha correspondente ao login do ReqRes | Parte 1: `@API-07` e `@API-09` |
 | `SAUCEDEMO_USERNAME` | Usuário de demonstração do SauceDemo indicado no desafio | Parte 2 |
 | `SAUCEDEMO_PASSWORD` | Senha correspondente ao usuário do SauceDemo | Parte 2 |
 
@@ -105,12 +105,15 @@ Selecione **E2E Testing**, escolha um navegador e abra a feature desejada. Para 
 
 ```bash
 npm run test:parte1 -- --env tags="@API-08"
+npm run test:parte1 -- --env tags="@API-09"
 npm run test:parte2 -- --env tags="@E2E-10"
 npm run test:parte3 -- --env tags="@csvInvalido"
 npm run test:open -- --env tags="@CSV-01"
 ```
 
 Os identificadores e grupos disponíveis estão nas próprias features. Na Parte 3, `@csvValido` seleciona os volumes de 10, 100 e 1.000 registros; `@csvInvalido` seleciona vazio, formato incorreto e dados malformados. Não deixe a tag temporária `@only` nas features, pois ela sobrepõe a seleção por tags no preprocessor instalado.
+
+`@API-09` valida a restauração da autenticação ReqRes: realiza uma consulta, remove o cookie ativo preservando a sessão em cache e realiza uma nova consulta. Confere o token restaurado, seu envio na requisição e somente um login durante o cenário. As chamadas são reais; essa verificação não comprova validade ou expiração do token no recurso público.
 
 ### Navegador e integração contínua
 
@@ -210,7 +213,6 @@ cypress.env.example
 package.json
 package-lock.json
 README.md
-PLANO_AUTOMACAO.md
 ```
 
 Nas partes práticas, `feature/` contém os cenários e `specs/` contém os steps `.cy.js`. Commands, seletores, helpers, fixtures e simulações ficam nas respectivas questões, conforme a necessidade de cada suíte.
@@ -223,10 +225,24 @@ Respostas teóricas disponíveis:
 - [Parte 4 — Automação mobile](parte4-mobile/questao4.1/RESPOSTA_TEORICA.md).
 - [Parte 5 — Mocks e integrações](parte5-mocks/questao5.1/RESPOSTA_TEORICA.md).
 
-As Partes 4 e 5 ficam na raiz do projeto e não possuem scripts de execução. O entregável de casos de teste em DOCX, PDF ou TXT ainda não está disponível no projeto.
+As Partes 4 e 5 ficam na raiz do projeto e não possuem scripts de execução.
 
-## Observações operacionais
+## Documentação dos casos de teste
 
-- Os testes reais dependem da disponibilidade dos serviços públicos, das credenciais e da cota GitHub. Falhas externas não são substituídas automaticamente por mocks.
-- Os cinco cenários `@skip` da Parte 2 são propostas documentais de cupons, compra de mais de uma unidade do mesmo produto e recusa financeira. Não representam cobertura executada. O filtro `not @skip` os exclui, como na CI.
-- Na Parte 3, sucesso significa recebimento do arquivo. O alvo também confirma arquivos inválidos; isso não comprova importação de registros. Os uploads usam dados sintéticos; arquivos locais permanecem intactos e não há remoção remota pelo teste.
+Os arquivos `.feature` são a fonte única de documentação dos casos de teste das partes práticas. Escritos em Gherkin, em português, descrevem contexto, ação e resultado esperado com Dado/Quando/Então. Os cenários possuem tags de identificação e agrupamento; os esquemas de cenário apresentam os dados de cada caso nas tabelas de exemplos. Essa documentação também orienta a execução automatizada, evitando manter uma descrição manual separada que possa divergir dos testes.
+
+- [Parte 1 — Rate limiting e autenticação](cypress/parte1-api/questao1.1/feature/).
+- [Parte 2 — Carrinho e checkout](cypress/parte2-e2e/questao2.1/feature/).
+- [Parte 3 — Upload de CSV](cypress/parte3-arquivos/questao3.1/feature/).
+
+Os cenários marcados com `@skip` são propostas documentais e não representam cobertura executada. A distinção entre integrações reais, simulações e limitações dos alvos está nas respostas teóricas de cada parte e na seção [Observações](#observações). Resultados de execução ficam nos relatórios; a presença de um cenário documentado não comprova sua aprovação ou sucesso.
+
+O enunciado solicita os casos de teste em DOCX, PDF ou TXT. A documentação atual é entregue em `.feature`; não há exportação nesses formatos no projeto. Essa escolha mantém uma única fonte dos casos, mas permanece uma diferença em relação ao formato solicitado.
+
+## Observações
+
+- **BDD:** cenários em português, com Dado/Quando/Então, documentam os comportamentos esperados e orientam a automação com Cucumber.
+- **Organização sem POM:** fluxos reutilizáveis são registrados com `Cypress.Commands.add()` e chamados por `cy.<comando>()`, com seletores em módulos separados. A escolha segue a [orientação oficial do Cypress](https://docs.cypress.io/app/core-concepts/best-practices#Organizing-Tests-Logging-In-Controlling-State), que classifica o compartilhamento de page objects como antipadrão.
+- **Rate limiting:** os headers são verificados no GitHub real. Para demonstrar a identificação de cota esgotada, um servidor local retorna status 403 e saldo zero. A simulação evita consumir deliberadamente a cota pública e permite execução previsível; não comprova o bloqueio real do GitHub.
+- **CSV:** o alvo confirma o recebimento, inclusive de arquivos inválidos, mas não oferece importação nem validação dos registros. Os testes verificam a geração de 10, 100 e 1.000 registros, o envio e a confirmação do arquivo; não comprovam processamento ou rejeição do conteúdo. Os dados são sintéticos, os arquivos locais permanecem intactos e não há remoção remota pelo teste.
+- **Limitações dos serviços públicos:** os testes reais dependem de disponibilidade, credenciais e cota; falhas externas não são substituídas automaticamente por mocks. Os cinco cenários `@skip` de cupons, múltiplas unidades do mesmo produto e recusa financeira permanecem documentais, pois o SauceDemo não oferece esses comportamentos.

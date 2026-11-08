@@ -25,6 +25,53 @@ Then('recebo os dados do usuário solicitado', function () {
   });
 });
 
+Given('que já realizei uma consulta com autenticação válida', function () {
+  this.userId = 2;
+  cy.then(() => Cypress.session.clearAllSavedSessions());
+  // Observa as chamadas reais, sem substituir respostas ou exibir credenciais.
+  cy.spy(cy, 'api').log(false).as('reqresApiCalls');
+
+  cy.reqresLogin().then((token) => {
+    this.token = token;
+    return cy.reqresAuthenticatedRequest(`/api/users/${this.userId}`, token);
+  }).then(({ status, body }) => {
+    expect(status, 'consulta antes da restauração').to.equal(200);
+    expect(body.data.id, 'usuário antes da restauração').to.equal(this.userId);
+  });
+});
+
+When('consulto novamente os dados de um usuário', function () {
+  const cookieOptions = {
+    domain: new URL(Cypress.expose('reqresBaseUrl')).hostname,
+    log: false,
+  };
+
+  cy.clearCookie('reqres-test-token', cookieOptions);
+  cy.getCookie('reqres-test-token', cookieOptions).should((cookie) => {
+    expect(cookie === null, 'cookie ativo removido antes da restauração').to.equal(true);
+  });
+
+  cy.reqresLogin().then((token) => {
+    this.restoredToken = token;
+    return cy.reqresAuthenticatedRequest(`/api/users/${this.userId}`, token)
+      .as('reqresResponse');
+  });
+});
+
+Then('utilizo a autenticação original sem realizar novo login', function () {
+  expect(this.restoredToken === this.token, 'cookie restaurado contém o token original')
+    .to.equal(true);
+
+  cy.get('@reqresApiCalls', { log: false }).then((apiCalls) => {
+    const loginUrl = `${Cypress.expose('reqresBaseUrl')}/api/login`;
+    const loginCount = apiCalls.getCalls().filter(({ args: [options] }) => {
+      return options.method === 'POST' && options.url === loginUrl;
+    }).length;
+
+    expect(loginCount, 'somente o primeiro acesso realiza login').to.equal(1);
+  });
+});
+
 Given('que possuo um token com validade simulada de {int} minutos', function (validityMinutes) {
   expect(validityMinutes, 'validade configurada para a simulação')
     .to.equal(tokenFixture.tokenValidityMinutes);

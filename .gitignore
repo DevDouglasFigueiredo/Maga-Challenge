@@ -7,3 +7,7 @@ cypress/downloads/
 !.env.example
 cypress.env.json
 artifacts/
+AGENTS.md
+PLANO_AUTOMACAO.md
+DECISOES_TECNICAS.md
+desafio.md
