@@ -1,5 +1,104 @@
 # Teste QA Sênior - Magazord
 
+## Parte 3 — CSV-01: arquivo válido com 10 registros
+
+```bash
+npm run test:parte3 -- --env tags="@CSV-01"
+npm run test:open -- --env tags="@CSV-01"
+```
+
+No modo interativo, abrir `csv-upload.feature`. Conferir validação de cabeçalho,
+10 registros além do cabeçalho, conteúdo e emails distintos; depois POST real
+com status 200, mensagem `File Uploaded!` e nome exato do arquivo selecionado.
+Se necessário neste ambiente, prefixar com `env -u ELECTRON_RUN_AS_NODE`.
+
+Arquivos em `cypress/parte3-arquivos/questao3.1/`: feature em `feature/`, steps em `specs/`,
+gerador em `utils/csv-generator.js`, seletores em `elements.js` e fluxo em
+`commands/upload.js`. O gerador não exige dependências adicionais; serializa
+vírgulas, aspas e quebras de linha com escape CSV e usa UTF-8. `selectFile` envia
+conteúdo em memória, sem gerar arquivos locais. A URL pública é configurada em
+`expose.fileUploadBaseUrl`. IDs do site são usados por não haver data-test;
+o título usa `.example h3`. Não há POM nem respostas simuladas.
+
+Documentação das APIs usadas: [selectFile](https://docs.cypress.io/api/commands/selectfile)
+e [intercept](https://docs.cypress.io/api/commands/intercept).
+O intercept apenas observa a requisição real. Asserções permanecem nos steps.
+
+`cy.readCsvFixture(fixtureName)`, em `commands/upload.js`, centraliza o caminho
+das fixtures desta questão, leitura UTF-8 e nome único do upload. Retorna
+`{ contents, fileName }` com o conteúdo intacto. Os Given inválidos verificam
+essa massa e registram `@csvFile` depois das asserções, usando `.then()` com
+retorno do objeto e `.as('csvFile')`. O command não cria aliases nem valida dados.
+
+Upload não comprova importação dos registros. Nome e emails variam por execução;
+o arquivo público contém somente dados sintéticos em domínio example.invalid.
+Retenção/remoção ficam a cargo do serviço, sem limpeza remota pelo teste.
+Casos detalhados em `cypress/parte3-arquivos/questao3.1/CASOS_DE_TESTE.txt`.
+Plano, resultados e aprovação em `PLANO_AUTOMACAO.md`. Os seis casos práticos
+possuem steps; respostas teóricas em
+[RESPOSTA_TEORICA.md](cypress/parte3-arquivos/questao3.1/RESPOSTA_TEORICA.md).
+Sucesso automatizado e
+aprovação manual são registrados separadamente.
+
+Os dois esquemas e seis exemplos foram revisados e aprovados pelo usuário.
+Cada exemplo possui uma tag própria em seu grupo de Exemplos, preservando
+os textos aprovados e permitindo executar somente o caso do ciclo atual.
+O filtro `@CSV-01` executa somente 10 registros; `@csvValido` seleciona os três
+volumes de 10, 100 e 1.000 registros. `@csvInvalido` seleciona os três arquivos
+com defeito. Sem filtro, `npm run test:parte3` executa os seis exemplos.
+Aprovação da escrita dos cenários não equivale à aprovação de sua automação.
+Não usar `@only`: essa tag sobrepõe a seleção por tags no preprocessor instalado.
+
+### CSV-04 — upload da fixture vazia
+
+```bash
+npm run test:parte3 -- --env tags="@CSV-04"
+npm run test:open -- --env tags="@CSV-04"
+```
+
+O Given usa `cy.readCsvFixture('vazio.csv')` para ler
+`cypress/parte3-arquivos/questao3.1/fixtures/vazio.csv`, confere conteúdo vazio
+e zero bytes e envia esse conteúdo sem
+transformação ao command existente, com nome `vazio-<UUID>.csv`. Não altera a
+fixture nem configuração global. O Then existente exige POST real 200, título
+de sucesso e nome exato. Isso caracteriza ausência de rejeição de arquivo vazio
+neste site; não comprova aprovação dos dados por um importador.
+
+Na revisão interativa, abrir `csv-upload.feature`, conferir somente CSV-04,
+leitura de `vazio.csv`, tamanho zero, POST 200 e nome correspondente na confirmação.
+Resultado e aprovação manual são registrados separadamente no plano.
+
+Fixtures físicas ficam em `cypress/parte3-arquivos/questao3.1/fixtures/`, equivalente
+ao diretório de exemplos solicitado em `parte3-arquivos/questao3.1/testes/fixtures/`
+no desafio, seguindo a estrutura atual do projeto. `vazio.csv` tem zero bytes;
+`valido.csv` contém cabeçalho e dois registros sintéticos. `corrompido.csv`
+contém campo entre aspas sem fechamento; `invalido.csv` contém quatro colunas,
+email inválido e idade negativa. Os quatro arquivos permanecem no repositório
+sem alterações ou exclusão pelos testes. O exemplo válido não substitui
+a geração dinâmica dos testes de volume.
+
+### CSV-05 e CSV-06 — estrutura corrompida e dados inválidos
+
+```bash
+npm run test:parte3 -- --env tags="@csvInvalido"
+npm run test:open -- --env tags="@csvInvalido"
+npm run test:parte3
+```
+
+Cada Given específico lê sua fixture com `cy.readCsvFixture()` em UTF-8 e preserva
+seu conteúdo no upload. CSV-05 confere cabeçalho e um registro com aspas abertas
+sem fechamento. CSV-06 confere cabeçalho, um registro com quatro campos sem
+aspas, nome/cidade presentes, email malformado e idade inteira negativa.
+Essas verificações qualificam massas controladas; não são um parser ou
+validador genérico de CSV. Não há nova dependência, mock ou gerador de inválidos.
+
+Os testes reutilizam upload/Then existentes, com nomes únicos `corrompido-<UUID>.csv`
+e `invalido-<UUID>.csv`, exigindo HTTP 200, título de sucesso e nome exato.
+O usuário autorizou implementar os dois casos restantes neste ciclo.
+Para revisão manual, abrir a feature com filtro `@csvInvalido`, conferir as
+três fixtures e seus defeitos antes do envio e as três confirmações reais.
+Isso comprova recebimento pelo alvo; não validação nem importação dos dados.
+
 Projeto de testes API e E2E com Cypress, cenários BDD em Gherkin e JavaScript.
 Requisitos do desafio: [desafio.md](desafio.md). Diretrizes: [AGENTS.md](AGENTS.md).
 

@@ -1,5 +1,221 @@
 # Automação incremental — API 1 e API 2
 
+## Parte 3 — plano aprovado de CSV
+
+### Aprovação da entrega para commit e push
+
+Usuário informou cenários passando e autorizou commit e push da Parte 3,
+incluindo refatorações e respostas teóricas. Última execução automatizada:
+seis cenários passaram, zero falhas, pendentes ou ignorados. Conferência final
+do diff passou. Artefatos Playwright, instruções locais e credenciais excluídos
+do commit. O arquivo `CASOS_DE_TESTE.txt` anteriormente citado no README não
+está presente na pasta atual e não será incluído; pendência da entrega em TXT.
+
+### Refatoração — cy.readCsvFixture(fixtureName)
+
+Extraída a preparação repetida dos três Given inválidos para `commands/upload.js`.
+O novo command lê a fixture da questão em UTF-8 e retorna `{ contents, fileName }`,
+preservando o conteúdo e acrescentando UUID ao nome de upload. Não cria alias
+nem contém asserções. Os steps mantêm todas as verificações da massa e retornam
+o objeto em `.then()` antes de `.as('csvFile')`, sem `cy.wrap()` repetido.
+`cy.uploadCsv()`, When/Then, geração dos válidos, feature, configuração,
+dependências e fixtures preservados. README atualizado.
+
+Comando executado: `env -u ELECTRON_RUN_AS_NODE npm run test:parte3`.
+Resultado no serviço real: 6 passaram, zero falhas, pendentes ou ignorados;
+saída 0. Cypress 16.2.1, Electron 146 headless e Node.js 24.22.0; duração
+aproximada de um minuto. Os nomes com UUID e as mesmas asserções de conteúdo,
+HTTP 200, título e nome correspondente foram preservados.
+SHA-256 dos quatro arquivos permaneceu idêntico antes/depois da execução;
+fixture vazia continua com zero bytes. `git diff --check` passou.
+Para revisão manual: `npm run test:open -- --env tags="@csvInvalido"`;
+conferir preparação pelo novo command, asserções nos steps e confirmação real.
+Refatoração aguardando validação do usuário.
+
+### CSV-05 e CSV-06 — implementação autorizada dos casos restantes
+
+O usuário aprovou o avanço após CSV-04 e solicitou implementar os demais casos
+de `@csvInvalido`, autorizando CSV-05 e CSV-06 neste ciclo. CSV-04 aprovado.
+Criadas fixtures físicas `corrompido.csv` (aspas sem fechamento) e `invalido.csv`
+(estrutura correta, email inválido e idade negativa), no diretório da questão.
+Steps específicos em `specs/csv-upload.cy.js` leem esses arquivos com
+`cy.readFile()` em UTF-8, qualificam o defeito e enviam conteúdo sem transformação.
+Nomes recebem UUID para evitar colisões; fixtures não são reescritas ou excluídas.
+
+CSV-05 verifica cabeçalho esperado e um registro com aspas abertas sem fechamento.
+CSV-06 verifica cabeçalho, um registro com quatro campos sem aspas, nome/cidade
+presentes, email malformado e idade inteira negativa. São verificações das massas
+controladas, não um parser ou validador genérico implementado pelo teste.
+Reutilizados command e Then existentes: POST real 200, `File Uploaded!` e nome
+correspondente. Gerador de válidos, feature, seletores e configuração preservados.
+Nenhuma nova dependência ou simulação. Casos TXT e README atualizados.
+
+Comando executado: `env -u ELECTRON_RUN_AS_NODE npm run test:parte3`.
+Resultado no serviço real: 6 passaram (CSV-01 a CSV-06), zero falhas,
+pendentes ou ignorados; saída 0. Cypress 16.2.1, Electron 146 headless,
+Node.js 24.22.0. Duração aproximada: um minuto; CSV-03 levou cerca de 53 segundos.
+Nenhuma espera fixa ou relaxamento das asserções foi introduzido.
+SHA-256 dos quatro arquivos permaneceu idêntico antes/depois da execução;
+fixture vazia continua com zero bytes. `git diff --check` passou.
+
+Revisão manual: `npm run test:open -- --env tags="@csvInvalido"`.
+Abrir `csv-upload.feature`, conferir as três leituras de fixtures e os defeitos
+de cada massa antes do envio; verificar POST 200, título e nome correspondente
+em todos. CSV-05 e CSV-06 aguardam revisão, execução manual e aprovação explícita.
+Isso comprova recebimento, não validação ou importação dos dados pelo serviço.
+
+### Correção da execução headless após mudança para cypress/
+
+Reproduzidos dois erros de configuração:
+- `npm run test:parte3 -- --env tags="@CSV-01"`: saída 1, nenhuma spec
+  encontrada porque o script ainda buscava `parte3-arquivos/` na raiz.
+- Execução direta no caminho atual: saída 3, três falhas de step ausente,
+  pois a configuração buscava `.cy.js` em vez do `.spec.js` existente.
+  A tag temporária `@only` no esquema válido selecionava os três exemplos,
+  mesmo com filtro `@CSV-01`; nenhuma requisição de upload ocorreu nessas falhas.
+
+Corrigidos caminho do script e condição de resolução dos steps para
+`cypress/parte3-arquivos/`. Removido `@only`, preservando os cenários e tags
+individuais. Nenhum gerador, command ou asserção de negócio foi alterado.
+README atualizado para a estrutura atual. Casos inválidos ainda sem steps:
+uma execução sem filtro não deve ser interpretada como suíte concluída.
+
+Verificação após correção, Cypress 16.2.1, Electron 146 headless e Node 24.22.0:
+
+```bash
+env -u ELECTRON_RUN_AS_NODE npm run test:parte3 -- --env tags="@CSV-01"
+env -u ELECTRON_RUN_AS_NODE npm run test:parte1
+env -u ELECTRON_RUN_AS_NODE npm run test:parte2 -- --env tags="not @skip"
+```
+
+Resultados: CSV-01 com 1 passando; Parte 1 com 5 passando; Parte 2 com
+10 passando. Todas com saída 0, sem falhas, pendentes ou ignorados nas seleções.
+Asserções preservadas. Sintaxe da configuração, JSON do package e
+git diff --check passaram. Nenhum cenário seguinte implementado neste ajuste.
+
+Alvo real: https://the-internet.herokuapp.com/upload. Sem simulação.
+Upload confirma recebimento, não importação ou validação das linhas.
+Todos os casos: Quando solicita o envio do arquivo; Então recebe confirmação
+identificando o arquivo enviado. Casos inválidos caracterizam a limitação do
+serviço, conforme código público consultado, a confirmar durante sua execução.
+
+| Ordem / ID | Requisito 3.1 | Objetivo / Dado | Resultado esperado | Estado |
+| --- | --- | --- | --- | --- |
+| 1 / CSV-01 | 1 pequeno, 2 e 4 | Enviar CSV válido com 10 registros | Upload confirmado com nome exato | Aguardando validação do usuário |
+| 2 / CSV-02 | 1 médio, 2 e 4 | Enviar CSV válido com 100 registros | Upload confirmado com nome exato | Passou na regressão; aguardando validação do usuário |
+| 3 / CSV-03 | 1 grande, 2 e 4 | Enviar CSV válido com 1.000 registros | Upload confirmado com nome exato | Passou na regressão; aguardando validação do usuário |
+| 4 / CSV-04 | 3 vazio | Enviar CSV vazio, zero bytes | Upload confirmado apesar de vazio | Aprovado pelo usuário ao autorizar os demais |
+| 5 / CSV-05 | 3 formato incorreto | Enviar CSV com aspas sem fechamento | Upload confirmado apesar da estrutura corrompida | Aguardando validação do usuário |
+| 6 / CSV-06 | 3 dados malformados | Enviar CSV com email inválido e idade negativa | Upload confirmado apesar dos dados inválidos | Aguardando validação do usuário |
+
+Primeiro escrever os cenários na feature e aguardar revisão e aprovação
+explícita antes de implementar código. O usuário aprovou os dois esquemas e
+seus seis exemplos. Essa aprovação refere-se aos cenários, não à validação
+manual da automação. Implementar um caso por ciclo, executar e aguardar revisão,
+execução manual e aprovação explícita antes do seguinte. Para CSV-05 e CSV-06,
+o usuário autorizou a implementação dos dois restantes neste ciclo. As quatro
+fixtures físicas estão disponíveis; respostas 3.1.a e 3.1.b disponíveis em
+`cypress/parte3-arquivos/questao3.1/RESPOSTA_TEORICA.md`, aguardando revisão.
+3.1.a abordará reconciliação por identificador/conteúdo e contagens;
+3.1.b abordará erros por linha/campo, duplicatas, relacionamentos e atomicidade.
+Sem regras de importação implementadas neste alvo, essa estratégia será teórica.
+
+### CSV-04 — fixture vazia e upload real
+
+Após revisão da feature e autorização do usuário para iniciar `@csvInvalido`,
+implementado somente CSV-04, conforme ciclo individual. Novo Given específico
+em `specs/csv-upload.cy.js` lê a fixture por caminho relativo à raiz, exige
+conteúdo vazio e zero bytes, cria nome único e reutiliza command/Then existentes.
+Sem alterações no gerador, configuração, cenários válidos ou suas asserções.
+
+Criados `fixtures/vazio.csv` (zero bytes) e `fixtures/valido.csv` (cabeçalho e
+dois registros sintéticos). Arquivos são exemplos físicos da entrega, permanecem
+no repositório e não são reescritos/excluídos pelos testes. Os inválidos usam
+essas massas físicas; volumes válidos continuam com geração dinâmica em memória.
+CSV-05/CSV-06 e respectivas fixtures não foram implementados neste ciclo.
+
+```bash
+env -u ELECTRON_RUN_AS_NODE npm run test:parte3 -- --env tags="@CSV-04"
+```
+
+Resultado real: 1 passou, zero falhas, pendentes ou ignorados; saída 0.
+Cypress 16.2.1, Electron 146 headless, Node.js 24.22.0. Comprovados POST 200,
+`File Uploaded!` e nome exato do arquivo vazio. Conferência local também confirmou
+zero bytes na fixture vazia e duas linhas de dados sintéticos no exemplo válido.
+Sucesso comprova recebimento, não importação nem validação de dados pelo alvo.
+
+Revisão manual: `npm run test:open -- --env tags="@CSV-04"`; abrir a feature,
+conferir leitura da fixture, zero bytes, POST real 200, título e nome correspondente.
+CSV-04 aguarda revisão, execução manual e aprovação explícita antes de CSV-05.
+
+Regressão do arquivo de steps: executado
+`env -u ELECTRON_RUN_AS_NODE npm run test:parte3 -- --env tags="@CSV-01"`.
+Resultado: 1 passou, zero falhas, pendentes ou ignorados; saída 0.
+`git diff --check` passou; fixture vazia permaneceu com zero bytes após o upload.
+
+### CSV-01 — implementação e resultado em 07/11/2026
+
+Revalidação após aprovação dos esquemas: preservada a estrutura reorganizada
+pelo usuário (`feature/`, `specs/`, `commands/`, `utils/` e `elements.js`).
+Corrigidos import dos seletores no spec e descoberta das features/steps.
+Cada exemplo recebeu tag própria em seu grupo de Exemplos; mesmos textos,
+mesmos seis casos. Isso permite executar somente CSV-01 sem rodar os demais.
+Gerador e command existentes preservados; nenhum step de dados inválidos criado.
+
+Executado novamente:
+`env -u ELECTRON_RUN_AS_NODE npm run test:parte3 -- --env tags="@CSV-01"`.
+Resultado: somente CSV-01, 1 passou; zero falhas, pendentes ou ignorados,
+saída 0. Cypress 16.2.1, Electron 146 headless, Node.js 24.22.0.
+Parser Gherkin confirmou seis exemplos e tags individuais, incluindo isolamento
+de CSV-01. Sintaxe da configuração e git diff --check passaram.
+Regressão repetida após correção dos caminhos: Parte 1 (`npm run test:parte1`),
+5 passaram; Parte 2 (`npm run test:parte2 -- --env tags="not @skip"`),
+10 passaram. Ambos com prefixo `env -u ELECTRON_RUN_AS_NODE`, saída 0,
+zero falhas, pendentes ou ignorados nas seleções.
+CSV-01 aguarda validação manual e aprovação explícita antes do próximo caso.
+
+Histórico da implementação inicial (antes da revisão dos esquemas):
+
+Feature e steps adjacentes em `parte3-arquivos/questao3.1/testes/`.
+Gerador usa dados sintéticos variáveis e emails distintos, sem dependência nova.
+Antes do envio, confere cabeçalho, 10 registros sem contar cabeçalho e conteúdo
+de cada registro. Command seleciona arquivo em memória; intercept observa
+POST real, sem mock. Steps exigem 200, título de sucesso e nome exato visível.
+IDs existentes são fallback por ausência de data-test; seletores isolados.
+A configuração resolve steps adjacentes somente para a Parte 3; partes 1 e 2
+mantêm a resolução anterior. Scripts existentes preservados.
+
+```bash
+env -u ELECTRON_RUN_AS_NODE npm run test:parte3 -- --env tags="@CSV-01"
+```
+
+Resultado: 1 passou, zero falhas, pendentes ou ignorados; saída 0.
+Cypress 16.2.1, Electron 146 headless, Node.js 24.22.0. A tentativa no sandbox
+encerrou com código 133 antes de iniciar o runner; execução fora dele passou.
+Verificação direta do gerador passou: escape de vírgulas, aspas, CR/LF,
+preservação UTF-8, quantidade 10, variação entre gerações e entrada inválida.
+Sintaxe da configuração e git diff --check passaram.
+
+Revisão manual: `npm run test:open -- --env tags="@CSV-01"`, abrir
+`csv-upload.feature`; conferir massa de 10 registros, POST real 200,
+`File Uploaded!` e mesmo nome selecionado. Reexecutar para conferir nova massa.
+Casos detalhados em `parte3-arquivos/questao3.1/CASOS_DE_TESTE.txt`.
+Comprova recebimento, não importação ou integridade do arquivo armazenado.
+Sem limpeza remota pelo teste; retenção sob responsabilidade do serviço público.
+
+CSV-01 aguarda revisão, execução manual e aprovação explícita do usuário.
+CSV-02 não será iniciado antes desse checkpoint.
+
+Regressão após ajuste compartilhado de configuração:
+
+```bash
+env -u ELECTRON_RUN_AS_NODE npm run test:parte1
+env -u ELECTRON_RUN_AS_NODE npm run test:parte2 -- --env tags="not @skip"
+```
+
+Parte 1: 5 passaram. Parte 2: 10 passaram. Zero falhas, pendentes ou ignorados
+nas seleções; saída 0 nas duas execuções. Nenhuma alteração nos cenários anteriores.
+
 Regra: implementar um cenário, executar com sucesso e aguardar revisão,
 execução manual e aprovação explícita do usuário antes de iniciar o próximo.
 Os passos Dado/Quando/Então aprovados estão em

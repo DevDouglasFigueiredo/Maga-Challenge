@@ -16,6 +16,7 @@ module.exports = defineConfig({
     },
     reqresBaseUrl: 'https://reqres.in',
     sauceDemoBaseUrl: 'https://www.saucedemo.com',
+    fileUploadBaseUrl: 'https://the-internet.herokuapp.com',
   },
   e2e: {
     baseUrl: 'https://api.github.com',
@@ -23,6 +24,7 @@ module.exports = defineConfig({
       'cypress/parte1-api/questao1.1/feature/**/*.feature',
       'cypress/parte2-e2e/questao2.1/feature/**/*.feature',
       'parte{2-e2e,3-arquivos}/**/testes/**/*.feature',
+      'cypress/parte3-arquivos/questao3.1/feature/**/*.feature',
     ],
     supportFile: 'cypress/support/e2e.js',
     async setupNodeEvents(on, config) {

@@ -8,7 +8,7 @@
     "test:open": "cypress open",
     "test:parte1": "cypress run --spec 'cypress/parte1-api/questao1.1/feature/**/*.feature'",
     "test:parte2": "cypress run --spec 'cypress/parte2-e2e/questao2.1/feature/**/*.feature'",
-    "test:parte3": "cypress run --spec 'parte3-arquivos/**/*.feature'"
+    "test:parte3": "cypress run --spec 'cypress/parte3-arquivos/questao3.1/feature/**/*.feature'"
   },
   "engines": {
     "node": "^22.13.0 || ^24.0.0 || >=26.0.0"
