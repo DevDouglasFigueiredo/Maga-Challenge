@@ -1,4 +1,4 @@
-import { elements } from '../elements';
+import { elements } from '../utils/elements';
 
 Cypress.Commands.add('readCsvFixture', (fixtureName) => {
   return cy.readFile(`cypress/parte3-arquivos/questao3.1/fixtures/${fixtureName}`, 'utf8')

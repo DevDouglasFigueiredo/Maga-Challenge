@@ -1,4 +1,4 @@
-import { elements } from '../elements';
+import { elements } from '../utils/elements';
 
 Cypress.Commands.add('finishCheckout', () => {
   cy.get(elements.btn.finish).click();

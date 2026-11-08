@@ -1,5 +1,5 @@
 import { Given, When, Then } from '@badeball/cypress-cucumber-preprocessor';
-import { elements } from '../elements';
+import { elements } from '../utils/elements';
 import { generateCheckoutData } from '../fixtures/checkout-data';
 import './common.steps';
 import '../commands/cart';

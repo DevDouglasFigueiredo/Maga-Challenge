@@ -1,4 +1,4 @@
-import { elements } from '../elements';
+import { elements } from '../utils/elements';
 import { formatPrice } from '../utils/order-totals';
 
 Cypress.Commands.add('openCart', () => {

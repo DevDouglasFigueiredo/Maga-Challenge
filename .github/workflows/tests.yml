@@ -51,6 +51,24 @@ jobs:
             --env CYPRESS_SAUCEDEMO_PASSWORD \
             desafio-magazord:ci
 
+      - name: Collect report
+        if: always()
+        run: |
+          if docker container inspect cypress-tests > /dev/null 2>&1; then
+            mkdir -p artifacts
+            docker cp cypress-tests:/e2e/artifacts/reports artifacts/reports \
+              || echo "::notice::Relatório indisponível; consulte os logs dos testes."
+          fi
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-report
+          path: artifacts/reports
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Collect screenshots
         if: always()
         run: |

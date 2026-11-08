@@ -4,6 +4,7 @@ services:
     platform: linux/amd64
     shm_size: 2gb
     volumes:
+      - ./artifacts:/e2e/artifacts
       - type: bind
         source: ./cypress.env.json
         target: /e2e/cypress.env.json

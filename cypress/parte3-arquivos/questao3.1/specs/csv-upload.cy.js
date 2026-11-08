@@ -1,6 +1,6 @@
 import { Given, When, Then } from '@badeball/cypress-cucumber-preprocessor';
 import { generateCsv } from '../utils/csv-generator';
-import { elements } from '../elements';
+import { elements } from '../utils/elements';
 import '../commands/upload';
 
 const generatedEmailPattern = /^teste-[a-f0-9-]+-\d+@example\.invalid$/;

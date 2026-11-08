@@ -1,11 +1,22 @@
 const { defineConfig } = require('cypress');
 const path = require('node:path');
 const createBundler = require('@bahmutov/cypress-esbuild-preprocessor');
-const { addCucumberPreprocessorPlugin, afterRunHandler } = require('@badeball/cypress-cucumber-preprocessor');
+const { addCucumberPreprocessorPlugin, beforeRunHandler, afterRunHandler } = require('@badeball/cypress-cucumber-preprocessor');
 const { createEsbuildPlugin } = require('@badeball/cypress-cucumber-preprocessor/esbuild');
+const { beforeRunHook, afterRunHook } = require('cypress-mochawesome-reporter/lib');
+const { restoreReportOwnership } = require('./cypress/support/report-ownership');
 const { startRateLimitServer } = require('./cypress/parte1-api/questao1.1/mocks/rate-limit-server');
 
 module.exports = defineConfig({
+  reporter: 'cypress-mochawesome-reporter',
+  reporterOptions: {
+    reportDir: 'artifacts/reports',
+    reportFilename: 'index',
+    overwrite: true,
+    charts: true,
+    inlineAssets: true,
+    embeddedScreenshots: true,
+  },
   expose: {
     hideCredentials: true,
     hideCredentialsOptions: {
@@ -37,7 +48,17 @@ module.exports = defineConfig({
       if (config.env.tags !== undefined) {
         config.expose.tags = config.env.tags;
       }
-      await addCucumberPreprocessorPlugin(on, config, { omitAfterRunHandler: true });
+      await addCucumberPreprocessorPlugin(on, config, {
+        omitBeforeRunHandler: true,
+        omitAfterRunHandler: true,
+      });
+      // Os dois plugins compartilham eventos; compor hooks evita sobrescrevê-los.
+      on('before:run', async (details) => {
+        await beforeRunHandler(config);
+        if (!config.isInteractive) {
+          await beforeRunHook(details);
+        }
+      });
       on('file:preprocessor', (file) => {
         // Resolver pelo nome da feature mantém steps homônimos de suítes distintas isolados.
         const stepDefinitions = [path.join(
@@ -60,8 +81,18 @@ module.exports = defineConfig({
         try {
           await afterRunHandler(config, results);
         } finally {
-          if (!config.isInteractive) {
-            await rateLimitServer.close();
+          try {
+            if (!config.isInteractive) {
+              try {
+                await afterRunHook();
+              } finally {
+                await restoreReportOwnership(config);
+              }
+            }
+          } finally {
+            if (!config.isInteractive) {
+              await rateLimitServer.close();
+            }
           }
         }
       });
