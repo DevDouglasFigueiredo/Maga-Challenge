@@ -41,7 +41,7 @@ module.exports = defineConfig({
       on('file:preprocessor', (file) => {
         // Resolver pelo nome da feature mantém steps homônimos de suítes distintas isolados.
         const stepDefinitions = [path.join(
-          path.dirname(file.filePath), '..', '{specs,Specs}',
+          path.dirname(file.filePath), '..', 'specs',
           `${path.basename(file.filePath, '.feature')}.cy.js`,
         )];
         return createBundler({

@@ -1,560 +1,281 @@
 # Teste QA Sênior - Magazord
 
-## Parte 3 — CSV-01: arquivo válido com 10 registros
+Projeto de testes de API, checkout e upload de arquivos para o desafio Magazord. As partes práticas usam Cypress, JavaScript e cenários BDD em português.
 
-```bash
-npm run test:parte3 -- --env tags="@CSV-01"
-npm run test:open -- --env tags="@CSV-01"
-```
-
-No modo interativo, abrir `csv-upload.feature`. Conferir validação de cabeçalho,
-10 registros além do cabeçalho, conteúdo e emails distintos; depois POST real
-com status 200, mensagem `File Uploaded!` e nome exato do arquivo selecionado.
-Se necessário neste ambiente, prefixar com `env -u ELECTRON_RUN_AS_NODE`.
-
-Arquivos em `cypress/parte3-arquivos/questao3.1/`: feature em `feature/`, steps em `specs/`,
-gerador em `utils/csv-generator.js`, seletores em `elements.js` e fluxo em
-`commands/upload.js`. O gerador não exige dependências adicionais; serializa
-vírgulas, aspas e quebras de linha com escape CSV e usa UTF-8. `selectFile` envia
-conteúdo em memória, sem gerar arquivos locais. A URL pública é configurada em
-`expose.fileUploadBaseUrl`. IDs do site são usados por não haver data-test;
-o título usa `.example h3`. Não há POM nem respostas simuladas.
-
-Documentação das APIs usadas: [selectFile](https://docs.cypress.io/api/commands/selectfile)
-e [intercept](https://docs.cypress.io/api/commands/intercept).
-O intercept apenas observa a requisição real. Asserções permanecem nos steps.
-
-`cy.readCsvFixture(fixtureName)`, em `commands/upload.js`, centraliza o caminho
-das fixtures desta questão, leitura UTF-8 e nome único do upload. Retorna
-`{ contents, fileName }` com o conteúdo intacto. Os Given inválidos verificam
-essa massa e registram `@csvFile` depois das asserções, usando `.then()` com
-retorno do objeto e `.as('csvFile')`. O command não cria aliases nem valida dados.
-
-Upload não comprova importação dos registros. Nome e emails variam por execução;
-o arquivo público contém somente dados sintéticos em domínio example.invalid.
-Retenção/remoção ficam a cargo do serviço, sem limpeza remota pelo teste.
-Casos detalhados em `cypress/parte3-arquivos/questao3.1/CASOS_DE_TESTE.txt`.
-Plano, resultados e aprovação em `PLANO_AUTOMACAO.md`. Os seis casos práticos
-possuem steps; respostas teóricas em
-[RESPOSTA_TEORICA.md](cypress/parte3-arquivos/questao3.1/RESPOSTA_TEORICA.md).
-Sucesso automatizado e
-aprovação manual são registrados separadamente.
-
-Os dois esquemas e seis exemplos foram revisados e aprovados pelo usuário.
-Cada exemplo possui uma tag própria em seu grupo de Exemplos, preservando
-os textos aprovados e permitindo executar somente o caso do ciclo atual.
-O filtro `@CSV-01` executa somente 10 registros; `@csvValido` seleciona os três
-volumes de 10, 100 e 1.000 registros. `@csvInvalido` seleciona os três arquivos
-com defeito. Sem filtro, `npm run test:parte3` executa os seis exemplos.
-Aprovação da escrita dos cenários não equivale à aprovação de sua automação.
-Não usar `@only`: essa tag sobrepõe a seleção por tags no preprocessor instalado.
-
-### CSV-04 — upload da fixture vazia
-
-```bash
-npm run test:parte3 -- --env tags="@CSV-04"
-npm run test:open -- --env tags="@CSV-04"
-```
-
-O Given usa `cy.readCsvFixture('vazio.csv')` para ler
-`cypress/parte3-arquivos/questao3.1/fixtures/vazio.csv`, confere conteúdo vazio
-e zero bytes e envia esse conteúdo sem
-transformação ao command existente, com nome `vazio-<UUID>.csv`. Não altera a
-fixture nem configuração global. O Then existente exige POST real 200, título
-de sucesso e nome exato. Isso caracteriza ausência de rejeição de arquivo vazio
-neste site; não comprova aprovação dos dados por um importador.
-
-Na revisão interativa, abrir `csv-upload.feature`, conferir somente CSV-04,
-leitura de `vazio.csv`, tamanho zero, POST 200 e nome correspondente na confirmação.
-Resultado e aprovação manual são registrados separadamente no plano.
-
-Fixtures físicas ficam em `cypress/parte3-arquivos/questao3.1/fixtures/`, equivalente
-ao diretório de exemplos solicitado em `parte3-arquivos/questao3.1/testes/fixtures/`
-no desafio, seguindo a estrutura atual do projeto. `vazio.csv` tem zero bytes;
-`valido.csv` contém cabeçalho e dois registros sintéticos. `corrompido.csv`
-contém campo entre aspas sem fechamento; `invalido.csv` contém quatro colunas,
-email inválido e idade negativa. Os quatro arquivos permanecem no repositório
-sem alterações ou exclusão pelos testes. O exemplo válido não substitui
-a geração dinâmica dos testes de volume.
-
-### CSV-05 e CSV-06 — estrutura corrompida e dados inválidos
-
-```bash
-npm run test:parte3 -- --env tags="@csvInvalido"
-npm run test:open -- --env tags="@csvInvalido"
-npm run test:parte3
-```
-
-Cada Given específico lê sua fixture com `cy.readCsvFixture()` em UTF-8 e preserva
-seu conteúdo no upload. CSV-05 confere cabeçalho e um registro com aspas abertas
-sem fechamento. CSV-06 confere cabeçalho, um registro com quatro campos sem
-aspas, nome/cidade presentes, email malformado e idade inteira negativa.
-Essas verificações qualificam massas controladas; não são um parser ou
-validador genérico de CSV. Não há nova dependência, mock ou gerador de inválidos.
-
-Os testes reutilizam upload/Then existentes, com nomes únicos `corrompido-<UUID>.csv`
-e `invalido-<UUID>.csv`, exigindo HTTP 200, título de sucesso e nome exato.
-O usuário autorizou implementar os dois casos restantes neste ciclo.
-Para revisão manual, abrir a feature com filtro `@csvInvalido`, conferir as
-três fixtures e seus defeitos antes do envio e as três confirmações reais.
-Isso comprova recebimento pelo alvo; não validação nem importação dos dados.
-
-Projeto de testes API e E2E com Cypress, cenários BDD em Gherkin e JavaScript.
-Requisitos do desafio: [desafio.md](desafio.md). Diretrizes: [AGENTS.md](AGENTS.md).
+As Partes 4 e 5 contêm respostas teóricas sobre [automação mobile](parte4-mobile/questao4.1/RESPOSTA_TEORICA.md) e [mocks de APIs externas](parte5-mocks/questao5.1/RESPOSTA_TEORICA.md). Não exigem instalação de ferramentas mobile nem execução de testes.
 
 ## Tecnologias
 
-- Node.js 22.13+ ou 24 (ou 26+), conforme compatibilidade do Cypress instalado.
+- Node.js 24 e npm, conforme o ambiente da CI.
 - Cypress 16.2.1.
-- `@faker-js/faker` 10.5.0, locale `pt_BR`, para dados sintéticos de checkout.
-- `@badeball/cypress-cucumber-preprocessor` para executar arquivos `.feature`.
-- esbuild e `@bahmutov/cypress-esbuild-preprocessor` para compilar os testes.
+- Cucumber com `@badeball/cypress-cucumber-preprocessor`.
+- esbuild, Faker e `cypress-plugin-api`.
+- Docker para execução em container local e na CI; Docker Compose v2 para simplificar execução local.
+
+As versões das dependências estão em [package.json](package.json) e [package-lock.json](package-lock.json).
+
+## Pré-requisitos
+
+Para executar com Docker, instale Docker Engine ou Docker Desktop com containers Linux e Docker Compose v2. Configure as credenciais conforme a seção [Configuração](#configuração) e execute `docker compose up`. Node.js, npm e Chrome são instalados na imagem; os passos de instalação no host abaixo são dispensáveis. Veja [Execução com Docker Compose](#execução-com-docker-compose).
+
+Para executar diretamente no host, instale Node.js 24 com npm. O manifesto também aceita as versões de Node.js especificadas em `engines`. Ambas as formas precisam de internet para baixar dependências e consultar serviços públicos.
+
+O Electron acompanha o Cypress e é usado por padrão na execução headless. Para executar com `--browser chrome`, instale o Google Chrome no sistema antes de iniciar os testes. No Linux, confira também as [dependências de sistema do Cypress](https://docs.cypress.io/app/get-started/install-cypress#Linux-Prerequisites).
 
 ## Instalação
 
+Na raiz do projeto:
+
 ```bash
-npm install
+npm ci
 npx cypress verify
 ```
 
-Após gerar e versionar `package-lock.json`, use `npm ci` para instalações reproduzíveis.
-
-O Cypress baixa seu binário durante a instalação. Linux também exige as
-[bibliotecas de sistema do Cypress](https://docs.cypress.io/app/get-started/install-cypress#Linux-Prerequisites).
-
-## Execução
+O lockfile já está versionado; `npm ci` instala as versões registradas nele. Como alternativa prevista no desafio:
 
 ```bash
-npm test                 # Todas as partes práticas, sem interface
-npm run test:open        # Interface interativa
-npm run test:parte1      # API
-npm run test:parte2      # Checkout E2E
-npm run test:parte3      # Upload CSV
+npm install
 ```
 
-Os cenários são implementados e aprovados um por vez. Para executar somente
-o cenário atual da API 1, sem incluir os cenários ainda não implementados:
+O Cypress é instalado pelas dependências do projeto; não é necessária instalação global. Para conferir os navegadores detectados:
 
 ```bash
-npm run test:parte1 -- --env tags="@API-01"
-npm run test:open -- --env tags="@API-01"
+npx cypress info
 ```
 
-No modo interativo, selecione E2E Testing, escolha o navegador e abra
-`api-1-rate-limiting.feature`. Apenas o cenário filtrado será executado.
-API-01 usa o GitHub real, sem token; exige rede e cota pública disponível.
-Valida limite de 60/h, saldo e renovação com base no horário do servidor.
-Não exige saldo inicial completo nem esgota a cota pública.
-O [plano da API 1](PLANO_AUTOMACAO.md) registra o estado dos ciclos.
-A execução sem filtro inclui cenários ainda não implementados.
-Partes 4 e 5 são teóricas e não possuem scripts.
+## Configuração
 
-### API-02 — consulta autenticada
-
-Usa um token pessoal GitHub válido com cota padrão de 5.000/h. Configure no
-mesmo terminal onde iniciará o Cypress, sem incluir o valor no histórico:
+Crie a configuração local a partir do exemplo, caso ainda não tenha esse arquivo:
 
 ```bash
-read -rsp 'Token GitHub: ' CYPRESS_GITHUB_TOKEN
-export CYPRESS_GITHUB_TOKEN
+cp cypress.env.example cypress.env.json
 ```
 
-Como alternativa local, crie `cypress.env.json` na raiz, já ignorado pelo Git,
-com a chave `GITHUB_TOKEN` e seu token como valor:
+Preencha os valores conforme os testes que pretende executar. Se o arquivo já existir, preserve as configurações presentes.
 
-```json
-{
-  "GITHUB_TOKEN": "SEU_TOKEN"
-}
-```
+| Variável | Uso | Necessária para |
+| --- | --- | --- |
+| `GITHUB_TOKEN` | Token pessoal GitHub válido, com a cota padrão esperada pelo teste | Parte 1: `@API-02` |
+| `REQRES_API_KEY` | Chave de API válida do ReqRes | Parte 1: `@API-07` |
+| `REQRES_EMAIL` | Email de login indicado no desafio | Parte 1: `@API-07` |
+| `REQRES_PASSWORD` | Senha correspondente ao login do ReqRes | Parte 1: `@API-07` |
+| `SAUCEDEMO_USERNAME` | Usuário de demonstração do SauceDemo indicado no desafio | Parte 2 |
+| `SAUCEDEMO_PASSWORD` | Senha correspondente ao usuário do SauceDemo | Parte 2 |
 
-Use JSON válido, com aspas duplas. Não versione esse arquivo.
-O Cypress carrega esse arquivo diretamente; `.env` não é carregado automaticamente.
-O código lê a credencial com `cy.env()`. O plugin mascara `authorization`
-na interface e as requisições autenticadas desabilitam o log padrão.
+`@API-01` não exige credenciais; `@API-03` e `@API-08` usam simulações locais. A Parte 3 não exige credenciais. Para executar todas as partes, preencha as seis variáveis.
+
+`cypress.env.json` é ignorado pelo Git. Também é possível fornecer as mesmas variáveis pelo ambiente com o prefixo `CYPRESS_`, por exemplo, `CYPRESS_GITHUB_TOKEN`. Arquivos `.env` não são carregados automaticamente. Não versione credenciais.
+
+## Execução dos testes
+
+### Todos os testes
 
 ```bash
-npm run test:parte1 -- --env tags="@API-02"
-npm run test:parte1 -- --env tags="@API-01 or @API-02"
-npm run test:open -- --env tags="@API-02"
+npm test
 ```
 
-No modo interativo, abra `api-1-rate-limiting.feature` e confira os dados do
-usuário `github`, o limite de 5000/h, o saldo e a renovação. O header de
-autenticação deve aparecer mascarado no painel do plugin.
-Se `ELECTRON_RUN_AS_NODE` estiver definido no ambiente, prefixe os comandos
-com `env -u ELECTRON_RUN_AS_NODE`.
-Credencial ausente ou inválida e cota esgotada causam falha explícita;
-nenhuma chamada autenticada é substituída por simulação.
-
-### API-03 — cota esgotada simulada
-
-API-03 faz uma requisição HTTP com `cy.api()` a um servidor local mínimo,
-criado com `node:http`, sem dependências adicionais. Esse servidor responde
-403 com header `X-RateLimit-Remaining: 0` e mensagem `API rate limit exceeded`.
-O teste valida a resposta recebida e sua identificação pelo helper
-`isRateLimitExceeded`.
+Para executar somente os cenários implementados, excluindo as propostas documentais marcadas com `@skip`:
 
 ```bash
-npm run test:parte1 -- --env tags="@API-03"
-npm run test:parte1 -- --env tags="@api1"
-npm run test:open -- --env tags="@API-03"
+npm test -- --env tags="not @skip"
 ```
 
-API-03 não precisa de token nem consulta o GitHub. A regressão `@api1` executa
-os três cenários e exige rede e token válido para os dois cenários reais.
-No modo interativo, confira no painel de `cy.api()` a URL
-`http://127.0.0.1:<porta>/users/github`, status 403, saldo zero e mensagem
-de limite atingido.
-
-O Cypress inicia o servidor durante `setupNodeEvents`, somente em loopback e
-com porta atribuída pelo sistema. Ao finalizar a execução headless, encerra
-o servidor; no modo interativo, mantém o servidor disponível para reexecuções
-até fechar o processo. Rotas desconhecidas retornam 404.
-
-Essa simulação valida o fluxo requisição HTTP → resposta 403 → detecção da cota esgotada.
-Não comprova o mecanismo de bloqueio do GitHub e não consome sua cota pública.
-API-01 e API-02 continuam validando respostas reais de integração com o GitHub.
-
-### API-07 — login e reutilização do token
-
-Executa um login real no ReqRes com as credenciais de exemplo do desafio e
-consulta o usuário de id 2 com o token recebido. A URL do ReqRes fica em
-`config.expose.reqresBaseUrl`; o `baseUrl` do GitHub permanece separado.
-O comando `cy.reqresAuthenticatedRequest(path, token)` envia o Bearer sem
-fazer outro login. As asserções nos steps verificam status 200, token não
-vazio, usuário esperado e o header efetivamente enviado na consulta.
-O comando `cy.reqresLogin()` lê as credenciais e cria/restaura a sessão com
-`cy.session()`, retornando o token ao step. Validações de login e armazenamento
-ficam no comando; asserções de consulta, identidade e envio do token ficam nos steps.
-O token retornado é guardado num cookie
-de teste `HttpOnly` e `Secure`, restrito ao domínio ReqRes, para o Cypress
-salvar e restaurar a sessão. Após criação ou restauração, o teste lê o token
-do cookie e o envia como Bearer. O ReqRes não depende desse cookie para login;
-ele é apenas armazenamento do teste. Headers de cookies também são mascarados.
-A validação da sessão verifica presença do token; se a sessão restaurada não
-passar nessa validação, o Cypress executa o login novamente. O endpoint público
-não permite verificar revogação ou expiração real dessa credencial.
-O cache usa uma única conta configurada e fica limitado ao spec, sem
-`cacheAcrossSpecs`. Ao trocar credenciais no modo interativo, limpe as sessões
-salvas pelo Cypress. Uma nova execução headless começa sem esse cache.
-Configure `REQRES_API_KEY`, `REQRES_EMAIL` e `REQRES_PASSWORD` em
-`cypress.env.json`, preservando `GITHUB_TOKEN`, ou exporte as variáveis com
-prefixo `CYPRESS_` no terminal. Use as credenciais indicadas no desafio.
-Email e senha são lidos com `cy.env()` sem log; não ficam nos steps.
-O plugin mascara email, senha, tokens e chave de API no painel.
-Não envie nem versione essas credenciais.
-A execução real exigiu `x-api-key` na consulta com Bearer; a chave de acesso
-ao serviço é diferente do token recebido no login. Ambos são mascarados.
+### Por parte
 
 ```bash
-npm run test:parte1 -- --env tags="@API-07"
-npm run test:parte1 -- --env tags="@api1 or @API-07"
-npm run test:open -- --env tags="@API-07"
-```
-
-No modo interativo, abra `api-2-token.feature` e confira o login seguido
-da consulta, respostas 200 e asserção de reutilização do token. Credenciais
-permanecem mascaradas pelo plugin. O endpoint clássico de usuários é público:
-este teste comprova envio do token recebido, sem comprovar proteção do recurso
-contra chamadas sem autenticação.
-Resultados efetivos e impedimentos ficam no [plano](PLANO_AUTOMACAO.md).
-Em 07/11/2026, API-07 passou isoladamente e a regressão com `@api1 or @API-07`
-teve 4 testes passando, sem falhas. API-07 foi revisado e aprovado pelo usuário.
-
-### API-09 — expiração simulada do token
-
-Usa somente HTTP local e token sintético, sem chave ReqRes ou token GitHub.
-Reaproveita o processo servidor do API-03, com rota independente `/api/users/2`.
-A fixture define emissão e validade de 2 minutos. O servidor aceita o token
-antes do vencimento e retorna 401 com código `token_expired` ao atingir o prazo.
-O horário chega pelo parâmetro `now`, exclusivo do contrato de simulação.
-
-O teste confirma uma consulta 200 antes da expiração, avança 120 segundos com
-`cy.clock()`/`cy.tick()` sem espera real e consulta novamente. O helper
-`handleTokenExpiration` trata a resposta: descarta o token e retorna indicação
-e mensagem para nova autenticação. Os steps verificam tanto a resposta HTTP
-quanto o resultado do tratamento. O relógio é restaurado pelo Cypress entre testes.
-
-```bash
-npm run test:parte1 -- --env tags="@API-09"
-npm run test:parte1 -- --env tags="@api1 or @api2"
-npm run test:open -- --env tags="@API-09"
-```
-
-Para revisão, abra `api-2-token.feature`: confira URL local, primeira resposta
-200, avanço de 120.000 ms, resposta 401 e asserções de descarte e novo login.
-Nenhuma credencial real é enviada ao servidor local. Não usa `cy.intercept()`.
-Este cenário verifica tratamento de expiração simulada; não comprova expiração
-do token do ReqRes público nem apresenta uma mensagem em interface de produto.
-Em 07/11/2026, API-09 passou isoladamente e a regressão das APIs 1 e 2 teve
-5 testes passando, zero falhas. API-09 aguarda revisão e aprovação do usuário.
-
-## Organização e BDD
-
-A parte 1 mantém as features em `cypress/parte1-api/questao1.1/feature/` e os passos
-em `cypress/parte1-api/questao1.1/specs/`. O preprocessor associa cada feature ao arquivo de steps com o mesmo nome,
-conforme a resolução configurada em `cypress.config.js`.
-A Parte 2 mantém features em `cypress/parte2-e2e/questao2.1/feature/`,
-steps em `Specs/`, commands em `commands/` e seletores em `elements.js`.
-A descoberta associa `nome.feature` a `Specs/nome.cy.js`, sem carregar
-steps homônimos de outras features. A resolução parte da pasta de cada feature
-e aceita `specs/` e `Specs/`, preservando os caminhos existentes da API. A Parte 3 permanece
-com a estrutura prevista em `parte3-arquivos/questao3.1/testes/`.
-Use `# language: pt` no início dos arquivos Gherkin em português.
-
-Os cenários descrevem comportamentos de negócio com Dado/Quando/Então.
-Passos delegam lógica reutilizável a comandos registrados em
-`cypress/support/commands.js`. Isole seletores em módulos por funcionalidade;
-não use POM. Código de suporte compartilhado fica em `cypress/support/`.
-
-## Decisões
-
-API e E2E compartilham o mesmo projeto e configuração. Bibliotecas adicionais
-serão incluídas conforme necessidade concreta dos cenários. Não adicione secrets,
-artefatos de execução ou dependências instaladas ao controle de versão.
-
-## Parte 2 — E2E-01: inclusão no carrinho
-
-Configure `SAUCEDEMO_USERNAME` e `SAUCEDEMO_PASSWORD` em `cypress.env.json`
-(ignorado pelo Git), preservando as chaves das APIs. Use as credenciais de
-exemplo fornecidas em `desafio.md`; o código lê os valores com `cy.env()` sem log.
-A URL fica em `config.expose.sauceDemoBaseUrl`, separada do baseUrl do GitHub.
-
-```bash
-npm run test:parte2 -- --env tags="@E2E-01 and not @skip"
-npm run test:open -- --env tags="@E2E-01 and not @skip"
-```
-
-Se necessário, prefixe com `env -u ELECTRON_RUN_AS_NODE`. No modo interativo,
-abra `cart.feature`: confira o único produto, quantidade 1, preço igual ao
-anunciado e contagem 1. As asserções ficam nos steps; os commands reutilizam
-login e inclusão sem POM. Use `cy.addProductToCart(productName)` para selecionar
-o produto pelo nome exato, adicionar e obter nome/preço do catálogo. O botão
-é localizado pelo atributo data-test dentro do produto escolhido.
-E2E-01 e E2E-02 foram revisados e aprovados pelo usuário;
-E2E-03 foi revisado e aprovado pelo usuário.
-
-O login usa `cy.session()` com `cacheAcrossSpecs: true`, reutilizando a sessão
-na mesma execução/máquina. Na primeira chamada, autentica pela interface e salva
-um estado sem produtos; nas seguintes, restaura e valida o catálogo protegido.
-Se a restauração não passar na validação, refaz o login. O host público entrega
-a aplicação com HTTP 404 ao acessar diretamente `/inventory.html`; apenas essa
-navegação tolera o status, exigindo URL correta e catálogo autenticado visível.
-Uma tela de erro ou redirecionamento para login continua fazendo o teste falhar. Reexecute o mesmo spec na interface para
-conferir restauração sem preencher credenciais novamente. Uma nova execução
-headless cria outro cache; ao trocar a senha mantendo o usuário, limpe as sessões
-salvas na interface. URL e usuário identificam a sessão; senha não integra o ID.
-
-O hook After de `@carrinho` limpa cookies, localStorage e sessionStorage, inclusive
-após falha, preservando o cache gerenciado pelo Cypress. O isolamento padrão
-continua ativo. Resultados e aprovação manual são registrados no plano.
-Este cenário cobre inclusão no SauceDemo público; checkout completo, cupons e
-autorização financeira não estão cobertos pelo E2E-01.
-
-### E2E-02 — dois produtos distintos
-
-A feature parametriza Sauce Labs Backpack e Sauce Labs Bike Light. O cenário
-reutiliza `cy.addProductToCart(productName)` para cada inclusão, captura os dados
-do catálogo e verifica os dois produtos exatos, quantidade 1 para cada um,
-preços anunciados e contagem 2. As verificações não dependem da ordem dos itens.
-Reutiliza sessão, precondição de carrinho vazio e limpeza após o teste.
-
-```bash
-npm run test:parte2 -- --env tags="@E2E-02 and not @skip"
-npm run test:parte2 -- --env tags="(@E2E-01 or @E2E-02) and not @skip"
-npm run test:open -- --env tags="@E2E-02 and not @skip"
-```
-
-Para revisão manual, abrir `cart.feature` e conferir os dois produtos, uma
-unidade de cada, preços iguais ao catálogo e contagem 2. Resultado automatizado
-e aprovação explícita são registrados separadamente em `PLANO_AUTOMACAO.md`.
-
-### E2E-03 — remoção do último produto
-
-A precondição parametriza o produto e confirma somente um item no carrinho,
-com nome esperado, quantidade 1 e contagem 1. A remoção reutilizável
-`cy.removeProductFromCart(productName)` procura o nome exato e o botão dentro
-do item. Os steps verificam carrinho visível sem produtos e ausência da contagem.
-Sessão e limpeza após o teste são compartilhadas com E2E-01 e E2E-02.
-
-```bash
-npm run test:parte2 -- --env tags="@E2E-03 and not @skip"
-npm run test:parte2 -- --env tags="@carrinho and not @skip"
-npm run test:open -- --env tags="@E2E-03 and not @skip"
-```
-
-Revisão manual: abrir `cart.feature`, conferir o único produto antes da remoção,
-carrinho vazio depois e ausência da contagem. Resultados e estado de aprovação
-ficam em `PLANO_AUTOMACAO.md`; sucesso automatizado não substitui aprovação.
-
-### Commands de navegação do carrinho
-
-Os steps reutilizam `cy.openCart()` e `cy.returnToCatalog()` para navegação.
-`cy.addProductAndOpenCart(productName)` inclui um produto, abre o carrinho e
-retorna nome/preço do catálogo. Para incluir vários produtos antes de abrir,
-use `cy.addProductToCart(productName)`. Asserções de negócio permanecem nos steps.
-A tag `@carrinho` na funcionalidade é necessária para aplicar o hook After de limpeza.
-
-```bash
-npm run test:parte2 -- --env tags="@carrinho and not @skip"
-npm run test:open -- --env tags="@carrinho and not @skip"
-```
-
-### E2E-04 — dados válidos no checkout
-
-O login e a limpeza compartilhados ficam em `Specs/common.steps.js`, importado
-explicitamente pelos specs de carrinho e dados. Não há importação de um spec
-pelo outro nem duplicação do Given de autenticação. O hook After se aplica a
-`@cart or @CheckoutData`, inclusive após falhas, preservando o cache de sessão.
-
-O Contexto inclui Backpack e Bike Light, capturando nome/preço anunciados.
-`cy.startCheckout()` abre o carrinho e inicia identificação;
-`cy.submitCheckoutData(data)` preenche os três dados e avança. Seletores em
-`elements.js` e asserções do resumo nos steps, sem POM.
-
-`fixtures/checkout-data.js` exporta `generateCheckoutData()`, usando `fakerPT_BR`
-para nome, sobrenome e CEP de oito dígitos, gerados durante cada execução e sem
-seed fixa. Dados podem se repetir; o CEP é sintético, sem consulta postal real.
-A versão do Faker está fixada no manifesto e lockfile. Node 22 exige 22.13+;
-a CI permanece em Node 24. Os três exemplos de campos obrigatórios estão implementados
-e aguardam validação manual conjunta, autorizada pelo usuário.
-
-```bash
-npm run test:parte2 -- --env tags="@E2E-04 and not @skip"
-npm run test:parte2 -- --env tags="(@cart or @E2E-04) and not @skip"
-npm run test:open -- --env tags="@E2E-04 and not @skip"
-```
-
-Revisão manual: abrir `checkout-data.feature`, conferir dados gerados no
-preenchimento, avanço para a revisão, exatamente os dois produtos, quantidade 1
-e preços iguais aos anunciados. Não finaliza a compra nem valida pagamento.
-Resultados automatizados e aprovação manual são registrados no plano.
-
-### E2E-05 — campos obrigatórios
-
-Preservada a escrita do esquema com uma única tabela de Exemplos contendo nome,
-sobrenome e CEP, sob a tag compartilhada `@E2E-05`. O usuário autorizou
-explicitamente implementar e validar os três neste ciclo, como exceção ao fluxo
-de um caso por vez.
-
-Cada execução gera dados com Faker e deixa somente o campo indicado vazio.
-O command limpa os três campos, preenche valores não vazios e confere os valores
-antes de avançar. Os steps relacionam o dado obrigatório à propriedade e à
-mensagem esperada; um nome de campo desconhecido falha explicitamente.
-
-| Campo ausente | Mensagem exata esperada |
-| --- | --- |
-| nome | Error: First Name is required |
-| sobrenome | Error: Last Name is required |
-| CEP | Error: Postal Code is required |
-
-Todos verificam erro visível, URL da identificação, formulário visível e resumo
-ausente, com sessão e limpeza compartilhadas.
-
-```bash
-npm run test:parte2 -- --env tags="@E2E-05 and not @skip"
-npm run test:parte2 -- --env tags="(@cart or @CheckoutData) and not @skip"
-npm run test:open -- --env tags="@E2E-05 and not @skip"
-```
-
-Revisão manual: abrir `checkout-data.feature` e conferir, nos três exemplos,
-somente o campo indicado vazio, demais dados preenchidos, mensagem específica
-e permanência na identificação. Aprovação do esquema registrada separadamente
-dos resultados automatizados em `PLANO_AUTOMACAO.md`.
-
-### E2E-08 — valores, pagamento e entrega
-
-A fixture `fixtures/review-order.js` define produtos, quantidades, preços em
-centavos, taxa esperada desta massa em pontos-base, cartão e entrega. O catálogo
-é comparado à fixture, assim como os produtos na revisão. Mudanças intencionais
-na oferta exigem revisão desses dados esperados; o teste não aceita qualquer
-novo preço automaticamente.
-
-`utils/order-totals.js` calcula subtotal, imposto e total independentemente dos
-valores exibidos. Multiplica preço por quantidade em centavos e aplica a taxa,
-arredondando ao centavo mais próximo, com meio centavo para cima. A formatação
-em dólares ocorre apenas para comparar textos. Não há cobrança de frete nesta
-massa, cuja modalidade gratuita também é validada.
-
-| Verificação | Esperado nesta compra |
-| --- | --- |
-| Backpack / Bike Light / Bolt T-Shirt | $29.99 / $9.99 / $15.99, quantidade 1 por produto |
-| Subtotal | $55.97 |
-| Imposto | $4.48, taxa esperada de 8% |
-| Total | $60.45 |
-| Pagamento | SauceCard #31337 |
-| Entrega | Free Pony Express Delivery! |
-
-A taxa é uma expectativa explícita do caso, não uma regra fiscal geral.
-Asserções de negócio ficam no spec e a limpeza compartilhada inclui a tag
-`@paymentConfirmation`. PAG-01 permanece com `@skip`, assim como os cupons.
-
-```bash
-npm run test:parte2 -- --env tags="@E2E-08 and not @skip"
+npm run test:parte1
 npm run test:parte2 -- --env tags="not @skip"
-npm run test:open -- --env tags="@E2E-08 and not @skip"
+npm run test:parte3
 ```
 
-Para revisar, abrir `payment-confirmation.feature` e conferir produtos,
-quantidades, preços, subtotal, imposto, total, cartão e modalidade de entrega.
-O cenário termina na revisão: não comprova cobrança ou processamento financeiro
-em backend. Resultados e aprovação manual são registrados no plano.
+O comando `npm run test:parte2` também está disponível; sem filtro, inclui as propostas com `@skip` como cenários ignorados. As Partes 4 e 5 são teóricas e não possuem scripts de execução.
 
-### Listas de produtos no E2E-08
-
-`cy.addProductsToCart(items)` recebe uma lista de `{ name, unitPriceCents, quantity }`,
-inclui cada produto sequencialmente pelo command individual e confere nome/preço
-anunciados contra a massa. Rejeita lista vazia, nomes duplicados e quantidade
-diferente de 1 antes das inclusões, pois o SauceDemo suporta uma unidade de
-cada produto distinto. A lista não tem limite fixo de dois produtos.
-
-`cy.validateProducts(items)` confere quantidade de itens, conjunto exato de nomes,
-quantidade por produto e preço esperado, sem depender da ordem exibida. O step
-Then identifica a intenção e delega essa validação ao command, conforme pedido
-do usuário. Os steps de totais, pagamento e entrega mantêm suas asserções.
-
-A massa atual tem Backpack, Bike Light e Bolt T-Shirt. O cálculo independente
-espera subtotal $55.97, imposto $4.48 e total $60.45. Reutilizados os seletores
-existentes; commands individuais e cenários de carrinho preservados.
-
-### E2E-09 — cancelar na revisão preservando o carrinho
-
-Prepara a revisão com os três produtos da fixture e dados Faker. Confere os
-produtos antes de cancelar e usa `cy.cancelCheckout()` para retornar ao catálogo.
-Valida URL, catálogo visível e ausência de resumo e confirmação. Depois confere
-a contagem e abre o carrinho para validar os mesmos produtos, quantidades e
-preços com `cy.validateProducts()`. Reutiliza sessão e limpeza compartilhadas.
+### Interface interativa
 
 ```bash
-npm run test:parte2 -- --env tags="@E2E-09 and not @skip"
-npm run test:open -- --env tags="@E2E-09 and not @skip"
+npm run test:open -- --env tags="not @skip"
 ```
 
-Para revisar, abrir `payment-confirmation.feature` e conferir revisão,
-cancelamento, retorno ao catálogo e carrinho preservado. A ausência de
-confirmação é verificada na interface; não comprova estado de pedido em backend.
-Resultados e aprovação manual ficam no plano de acompanhamento.
+Selecione **E2E Testing**, escolha um navegador e abra a feature desejada. Para aplicar uma configuração alterada, reinicie o Cypress. Ao trocar credenciais durante a mesma sessão interativa, limpe as sessões salvas pelo runner.
 
-### E2E-10 — confirmar compra completa de produtos
-
-Percorre autenticação por sessão, inclusão dos três produtos da fixture,
-identificação com dados Faker, revisão e finalização. Antes de finalizar, confere
-produtos, quantidades e preços. Os cálculos detalhados continuam no E2E-08.
-
-`cy.finishCheckout()` finaliza e aguarda a conclusão. O command
-`cy.validateOrderConfirmation()` confere a URL `/checkout-complete.html`, a
-conclusão visível e os textos exatos de agradecimento e despacho. Depois o teste
-verifica ausência da contagem, abre o carrinho e confirma ausência de produtos.
-A limpeza compartilhada ocorre também em falhas.
+### Filtros por cenário ou grupo
 
 ```bash
-npm run test:parte2 -- --env tags="@E2E-10 and not @skip"
-npm run test:parte2 -- --env tags="not @skip"
-npm run test:open -- --env tags="@E2E-10 and not @skip"
+npm run test:parte1 -- --env tags="@API-08"
+npm run test:parte2 -- --env tags="@E2E-10"
+npm run test:parte3 -- --env tags="@csvInvalido"
+npm run test:open -- --env tags="@CSV-01"
 ```
 
-Para revisar, abrir `payment-confirmation.feature` e conferir dados gerados,
-três produtos na revisão, confirmação após finalizar e carrinho vazio.
-A confirmação demonstra comportamento da interface do SauceDemo; não comprova
-cobrança, envio ou pedido em backend. Resultados e aprovação manual ficam no plano.
+Os identificadores e grupos disponíveis estão nas próprias features. Na Parte 3, `@csvValido` seleciona os volumes de 10, 100 e 1.000 registros; `@csvInvalido` seleciona vazio, formato incorreto e dados malformados. Não deixe a tag temporária `@only` nas features, pois ela sobrepõe a seleção por tags no preprocessor instalado.
+
+### Navegador e integração contínua
+
+Para usar Chrome instalado localmente:
+
+```bash
+npm test -- --browser chrome --env tags="not @skip"
+```
+
+Esse é o comando padrão da imagem Docker usada pela [CI](.github/workflows/tests.yml). O runner Ubuntu 24.04 constrói a imagem para `linux/amd64`; Node.js 24, Chrome e dependências dos testes executam dentro dela. As credenciais são fornecidas por secrets do repositório; o secret do token GitHub se chama `GH_API_TOKEN` e é exposto ao processo como `CYPRESS_GITHUB_TOKEN`. Os demais secrets têm os nomes das variáveis da tabela, sem o prefixo `CYPRESS_`.
+
+## Execução com Docker Compose
+
+Na primeira utilização, crie `cypress.env.json` a partir de `cypress.env.example`, caso o arquivo ainda não exista, e preencha as seis credenciais da seção [Configuração](#configuração). Preserve o arquivo já configurado em execuções seguintes.
+
+Com Docker Compose v2 instalado e credenciais preenchidas, basta executar na raiz:
+
+```bash
+docker compose up
+```
+
+Na primeira execução, [compose.yml](compose.yml) constrói a imagem definida no [Dockerfile](Dockerfile) e instala dependências automaticamente. O serviço `tests` executa os cenários implementados das Partes 1, 2 e 3 em Chrome headless e encerra ao terminar; as cinco propostas `@skip` ficam excluídas. As Partes 4 e 5 são somente documentos. A configuração local já existente é montada somente para leitura; credenciais continuam fora da imagem. Não é necessário criar `.env.docker` para usar Compose. Sem `cypress.env.json`, a execução falha em vez de criar uma pasta no lugar do arquivo.
+
+Depois de alterar código ou dependências, reconstrua:
+
+```bash
+docker compose up --build
+```
+
+Para obter no terminal o código de saída dos testes, use:
+
+```bash
+docker compose up --build --exit-code-from tests
+```
+
+Validação local: `docker compose up --exit-code-from tests` construiu a imagem automaticamente e executou 21 testes com sucesso, saída 0. Montagem somente para leitura e memória compartilhada de 2 GiB conferidas. Log sanitizado em `artifacts/docker-compose.log`.
+
+Para remover container e rede criados pelo Compose:
+
+```bash
+docker compose down
+```
+
+## Execução com Docker
+
+Requer Docker Engine ou Docker Desktop com containers Linux e acesso ao daemon. Node.js e navegadores no host são dispensáveis. Build e testes reais precisam de internet. Referência suportada: `linux/amd64`, mesma arquitetura da CI; outras arquiteturas podem exigir emulação e não foram homologadas.
+
+```bash
+docker build --platform linux/amd64 --tag desafio-magazord:local .
+docker run --rm --platform linux/amd64 desafio-magazord:local npx cypress info
+```
+
+O [Dockerfile](Dockerfile) fixa imagem oficial `cypress/browsers` por tag completa e digest: Node.js 24.22.1 e Chrome 156.0.8078.73. Cypress 16.2.1 e preprocessadores são instalados pelo lockfile com `npm ci --include=dev`. O build executa `cypress verify`; não instala pacotes na execução. Para atualizar a base, conferir tag e digest no registry e repetir as validações. Não trocar por `latest`.
+
+Crie localmente `.env.docker` com os valores necessários, sem aspas e sem espaços em torno de `=`:
+
+```dotenv
+CYPRESS_GITHUB_TOKEN=
+CYPRESS_REQRES_API_KEY=
+CYPRESS_REQRES_EMAIL=
+CYPRESS_REQRES_PASSWORD=
+CYPRESS_SAUCEDEMO_USERNAME=
+CYPRESS_SAUCEDEMO_PASSWORD=
+```
+
+Preencha as seis variáveis para a suíte completa. `.env.docker` é ignorado pelo Git e pelo contexto Docker. Não inclua credenciais em comandos de build. `cypress.env.json` local não entra na imagem; no container, use `--env-file` ou `--env NOME` para encaminhar variáveis já exportadas no terminal.
+
+Executar suíte completa, com o comando padrão que exclui propostas `@skip`:
+
+```bash
+docker run --rm --platform linux/amd64 --shm-size=2g \
+  --env-file .env.docker desafio-magazord:local
+```
+
+Executar por parte ou tag, substituindo o comando padrão:
+
+```bash
+docker run --rm --platform linux/amd64 --shm-size=2g --env-file .env.docker \
+  desafio-magazord:local npm run test:parte1 -- --browser chrome
+
+docker run --rm --platform linux/amd64 --shm-size=2g --env-file .env.docker \
+  desafio-magazord:local npm run test:parte2 -- --browser chrome --env 'tags=not @skip'
+
+docker run --rm --platform linux/amd64 --shm-size=2g \
+  desafio-magazord:local npm run test:parte3 -- --browser chrome
+
+docker run --rm --platform linux/amd64 --shm-size=2g \
+  desafio-magazord:local npm run test:parte1 -- --browser chrome --env 'tags=@API-03 or @API-08'
+```
+
+Último comando executa somente simulações locais, sem credenciais ou chamadas aos serviços públicos. Servidor de simulação e Cypress ficam no mesmo container; nenhuma porta precisa ser publicada. A imagem atende execução headless; interface `cypress open` continua no host.
+
+Para preservar screenshots de falhas, execute sem `--rm`, copie antes de remover o container e confira o código de saída:
+
+```bash
+docker run --name magazord-local --platform linux/amd64 --shm-size=2g \
+  --env-file .env.docker desafio-magazord:local
+# No terminal, anote a saída do docker run antes de executar outros comandos.
+docker inspect --format '{{.State.ExitCode}}' magazord-local
+mkdir -p artifacts
+docker cp magazord-local:/e2e/cypress/screenshots artifacts/screenshots
+docker rm magazord-local
+```
+
+A pasta de screenshots pode não existir quando não houve falha; nesse caso, `docker cp` informa ausência. Vídeos não estão habilitados. Evidências podem conter dados exibidos durante os testes; revise antes de compartilhar. Não monte o projeto inteiro em `/e2e`: isso esconderia as dependências instaladas na imagem.
+
+### Pipeline e riscos operacionais
+
+- A CI preserva execução em `push`, valida presença dos seis secrets sem imprimir valores e executa a mesma imagem local. Secret ausente ou teste com falha mantém o job vermelho; não há fallback automático para simulação.
+- `GH_API_TOKEN` deve ser token pessoal válido com cota de 5.000 exigida pelo API-02. O token automático `GITHUB_TOKEN` do Actions normalmente tem cota de 1.000 por repositório e não é substituto nesse teste. [Limites oficiais](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api).
+- Bibliotecas Linux e Chrome vêm da [imagem oficial Cypress](https://github.com/cypress-io/cypress-docker-images). `--shm-size=2g` reduz risco de encerramento do navegador por pouca memória compartilhada; ainda é necessário recurso suficiente no host.
+- A imagem oficial inclui outros navegadores além do Chrome e ocupa aproximadamente 4,94 GB locais nesta validação. Essa escolha evita manutenção manual das bibliotecas Linux; considere espaço e tempo de download no runner.
+- O build atual apontou quatro ocorrências moderadas no `npm audit`, na árvore do preprocessor Cucumber (`glob`, `minimatch` e `mocha`, além do próprio preprocessor). Dependências preservadas; correção automática sugerida pelo npm envolve mudança incompatível de versão e exige avaliação separada.
+- O job tem limite de 30 minutos para acomodar download e build frios. Indisponibilidade do Docker Hub, npm ou download do Cypress ainda pode interromper instalação. Mudanças somente nos testes reutilizam a camada de dependências quando existe cache Docker local.
+- A CI coleta screenshots mesmo após falha, publica `cypress-screenshots` por sete dias quando existem arquivos e remove o container ao final. Falta de screenshot não transforma falha de teste em sucesso.
+- Serviços GitHub, ReqRes, SauceDemo e Heroku continuam externos: expiração de credenciais, cotas, indisponibilidade e mudanças de comportamento podem quebrar testes. Docker estabiliza ambiente, sem garantir disponibilidade desses serviços.
+- Parte 2 usa somente `specs/` em minúsculas. As cópias antigas `Specs/` precisam permanecer removidas no commit para evitar divergências em checkout Linux.
+- Infraestrutura atende ao item de execução em container do checklist da avaliação. A entrega Docker não altera os cenários nem encerra a avaliação das demais entregas.
+
+### Validação desta entrega — 08/11/2026
+
+- Build inicial com instalação limpa via `npm ci --include=dev` e `cypress verify`: passou. Rebuild em snapshot limpo dos arquivos versionados existentes e das alterações propostas gerou a mesma imagem, sem `node_modules` ou credenciais locais.
+- Versões dentro do container: Node.js 24.22.1, Chrome 156.0.8078.73 e Cypress 16.2.1. Conteúdo e histórico da imagem conferidos: nenhuma credencial local incorporada.
+- Simulações `@API-03 or @API-08`: 2 passaram, saída 0.
+- Comando padrão da imagem com as seis variáveis de ambiente: 21 passaram (API: 5; checkout: 10; CSV: 6), zero falhas, pendentes ou ignorados na seleção, saída 0. Cinco propostas `@skip` excluídas. Duração dos testes: aproximadamente 1 minuto e 29 segundos. Log local sanitizado em `artifacts/docker-suite.log`, ignorado pelo Git.
+- Workflow validado com actionlint 1.7.12, ferramenta temporária fora das dependências do projeto. Preflight rejeitou secrets ausentes/em branco e aceitou valores preenchidos. Falha controlada manteve saída 7 após coleta de artefato sintético; comando inexistente retornou erro e limpeza funcionou também sem screenshots. Nenhum cenário ou asserção de negócio alterado.
+- Execução remota no GitHub Actions ainda pendente: este workflow modificado precisa ser publicado por commit/push. Resultado local e análise estática não comprovam configuração dos secrets nem execução no runner remoto.
+
+## Estrutura do projeto
+
+```text
+cypress/
+├── support/             # Suporte compartilhado
+├── parte1-api/questao1.1/
+├── parte2-e2e/questao2.1/
+└── parte3-arquivos/questao3.1/
+parte4-mobile/
+└── questao4.1/
+    └── RESPOSTA_TEORICA.md
+parte5-mocks/
+└── questao5.1/
+    └── RESPOSTA_TEORICA.md
+compose.yml
+Dockerfile
+.dockerignore
+.github/workflows/tests.yml
+cypress.config.js
+cypress.env.example
+package.json
+package-lock.json
+README.md
+PLANO_AUTOMACAO.md
+```
+
+Nas partes práticas, `feature/` contém os cenários e `specs/` contém os steps `.cy.js`. Commands, seletores, helpers, fixtures e simulações ficam nas respectivas questões, conforme a necessidade de cada suíte.
+
+Respostas teóricas disponíveis:
+
+- [Parte 1 — API](cypress/parte1-api/questao1.1/RESPOSTA_TEORICA.md).
+- [Parte 2 — E2E](cypress/parte2-e2e/questao2.1/RESPOSTA_TEORICA.md).
+- [Parte 3 — Arquivos](cypress/parte3-arquivos/questao3.1/RESPOSTA_TEORICA.md).
+- [Parte 4 — Automação mobile](parte4-mobile/questao4.1/RESPOSTA_TEORICA.md).
+- [Parte 5 — Mocks e integrações](parte5-mocks/questao5.1/RESPOSTA_TEORICA.md).
+
+As Partes 4 e 5 ficam na raiz do projeto e não possuem scripts de execução. O entregável de casos de teste em DOCX, PDF ou TXT ainda não está disponível no projeto.
+
+## Observações operacionais
+
+- Os testes reais dependem da disponibilidade dos serviços públicos, das credenciais e da cota GitHub. Falhas externas não são substituídas automaticamente por mocks.
+- Os cinco cenários `@skip` da Parte 2 são propostas documentais de cupons, compra de mais de uma unidade do mesmo produto e recusa financeira. Não representam cobertura executada. O filtro `not @skip` os exclui, como na CI.
+- Na Parte 3, sucesso significa recebimento do arquivo. O alvo também confirma arquivos inválidos; isso não comprova importação de registros. Os uploads usam dados sintéticos; arquivos locais permanecem intactos e não há remoção remota pelo teste.

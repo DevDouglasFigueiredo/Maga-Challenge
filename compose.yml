@@ -1,0 +1,12 @@
+services:
+  tests:
+    build: .
+    platform: linux/amd64
+    shm_size: 2gb
+    volumes:
+      - type: bind
+        source: ./cypress.env.json
+        target: /e2e/cypress.env.json
+        read_only: true
+        bind:
+          create_host_path: false

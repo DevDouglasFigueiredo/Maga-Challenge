@@ -1,0 +1,17 @@
+# Allow only files needed to build and run the tests.
+**
+!Dockerfile
+!.dockerignore
+!package.json
+!package-lock.json
+!cypress.config.js
+!cypress/
+!cypress/**
+
+**/node_modules
+**/screenshots
+**/videos
+**/downloads
+**/.env*
+**/cypress.env.json
+**/RESPOSTA_TEORICA.md

@@ -8,22 +8,15 @@ permissions:
 jobs:
   tests:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Configure Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
+      - name: Build test image
+        run: docker build --platform linux/amd64 --tag desafio-magazord:ci .
 
       - name: Run Cypress tests
-        run: npm test -- --browser chrome --env tags="not @skip"
         env:
           CYPRESS_GITHUB_TOKEN: ${{ secrets.GH_API_TOKEN }}
           CYPRESS_REQRES_API_KEY: ${{ secrets.REQRES_API_KEY }}
@@ -31,3 +24,54 @@ jobs:
           CYPRESS_REQRES_PASSWORD: ${{ secrets.REQRES_PASSWORD }}
           CYPRESS_SAUCEDEMO_USERNAME: ${{ secrets.SAUCEDEMO_USERNAME }}
           CYPRESS_SAUCEDEMO_PASSWORD: ${{ secrets.SAUCEDEMO_PASSWORD }}
+        run: |
+          required=(
+            CYPRESS_GITHUB_TOKEN
+            CYPRESS_REQRES_API_KEY
+            CYPRESS_REQRES_EMAIL
+            CYPRESS_REQRES_PASSWORD
+            CYPRESS_SAUCEDEMO_USERNAME
+            CYPRESS_SAUCEDEMO_PASSWORD
+          )
+          for variable in "${required[@]}"; do
+            value="${!variable:-}"
+            if [[ -z "${value//[[:space:]]/}" ]]; then
+              echo "::error::Secret obrigatório ausente para ${variable}. Consulte o README."
+              exit 1
+            fi
+          done
+
+          docker run --name cypress-tests --platform linux/amd64 --shm-size=2g \
+            --env CI=true \
+            --env CYPRESS_GITHUB_TOKEN \
+            --env CYPRESS_REQRES_API_KEY \
+            --env CYPRESS_REQRES_EMAIL \
+            --env CYPRESS_REQRES_PASSWORD \
+            --env CYPRESS_SAUCEDEMO_USERNAME \
+            --env CYPRESS_SAUCEDEMO_PASSWORD \
+            desafio-magazord:ci
+
+      - name: Collect screenshots
+        if: always()
+        run: |
+          if docker container inspect cypress-tests > /dev/null 2>&1; then
+            mkdir -p artifacts
+            docker cp cypress-tests:/e2e/cypress/screenshots artifacts/screenshots \
+              || echo "::notice::Screenshots indisponíveis; consulte os logs dos testes."
+          fi
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-screenshots
+          path: artifacts/screenshots
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Remove test container
+        if: always()
+        run: |
+          if docker container inspect cypress-tests > /dev/null 2>&1; then
+            docker rm --force cypress-tests
+          fi

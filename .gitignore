@@ -6,3 +6,4 @@ cypress/downloads/
 .env.*
 !.env.example
 cypress.env.json
+artifacts/
