@@ -6,7 +6,7 @@ Funcionalidade: Respeitar os limites de consulta da API do GitHub
   Quero reconhecer a cota disponível e seu esgotamento
   Para realizar consultas respeitando os limites do serviço
 
-  @github @API-01
+  @API-01
   Cenário: Informar limite de 60 consultas por hora sem autenticação
     Dado que existe cota disponível para consultas públicas sem autenticação
     Quando consulto o usuário público "github"
@@ -15,7 +15,7 @@ Funcionalidade: Respeitar os limites de consulta da API do GitHub
     E sou informado da quantidade restante e do momento de renovação da cota
     E a quantidade restante está dentro do limite permitido
 
-  @github @API-02
+  @API-02
   Cenário: Informar limite de 5000 consultas por hora com autenticação
     Dado que possuo autenticação válida no GitHub com cota padrão de 5000 consultas por hora
     E existe cota disponível para consultas autenticadas
@@ -25,7 +25,7 @@ Funcionalidade: Respeitar os limites de consulta da API do GitHub
     E sou informado da quantidade restante e do momento de renovação da cota
     E a quantidade restante está dentro do limite permitido
 
-  @simulado @rate_limit @API-03
+  @API-03
   Cenário: Reconhecer o esgotamento da cota como causa da recusa de acesso
     Dado que a cota de consultas da janela atual está esgotada
     Quando consulto o usuário público "github"

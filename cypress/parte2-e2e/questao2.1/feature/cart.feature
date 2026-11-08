@@ -1,6 +1,6 @@
 # language: pt
 
-@cart
+@cart @parte2
 Funcionalidade: Gerenciamento do carrinho
   Como cliente
   Quero escolher e remover produtos da minha compra

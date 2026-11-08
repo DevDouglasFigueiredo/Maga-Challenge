@@ -1,6 +1,6 @@
 # language: pt
 
-@paymentConfirmation
+@parte2 @paymentConfirmation
 Funcionalidade: Revisão e conclusão da compra
   Como cliente
   Quero revisar e concluir minha compra

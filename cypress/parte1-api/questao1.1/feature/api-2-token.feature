@@ -6,13 +6,13 @@ Funcionalidade: Autenticação com token
   Quero utilizar o token obtido no login e reconhecer sua expiração
   Para consultar dados e tratar a perda de autenticação
 
-  @reqres @API-07
+  @API-07
   Cenário: Consultar dados após autenticação válida
     Dado que possuo credenciais válidas no ReqRes
     Quando realizo login e consulto um usuário
     Então recebo os dados do usuário solicitado
 
-  @autenticacao @API-08
+  @API-08
   Cenário: Tratar o erro de autenticação após a expiração do token
     Dado que possuo um token com validade simulada de 2 minutos
     E esse prazo de validade já foi atingido

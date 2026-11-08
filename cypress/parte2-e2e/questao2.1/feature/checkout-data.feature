@@ -1,6 +1,6 @@
 # language: pt
 
-@CheckoutData
+@parte2 @CheckoutData
 Funcionalidade: Identificação do cliente no checkout
   Como cliente com produtos no carrinho
   Quero informar meus dados para a compra

@@ -1,5 +1,5 @@
 # language: pt
-@csvUpload
+@parte3 @csvUpload
 Funcionalidade: Envio de arquivos CSV
   Como usuário do sistema
   Quero enviar arquivos CSV para o sistema
