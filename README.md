@@ -125,39 +125,6 @@ npm test -- --browser chrome --env tags="not @skip"
 
 Esse é o comando padrão da imagem Docker usada pela [CI](.github/workflows/tests.yml). O runner Ubuntu 24.04 constrói a imagem para `linux/amd64`; Node.js 24, Chrome e dependências dos testes executam dentro dela. As credenciais são fornecidas por secrets do repositório; o secret do token GitHub se chama `GH_API_TOKEN` e é exposto ao processo como `CYPRESS_GITHUB_TOKEN`. Os demais secrets têm os nomes das variáveis da tabela, sem o prefixo `CYPRESS_`.
 
-## Relatórios de execução
-
-Toda execução headless (`npm test`, scripts por parte ou tag e Docker) gera automaticamente um relatório Mochawesome em `artifacts/reports/index.html`. Abra esse arquivo no navegador após os testes. Não é necessário executar comando adicional para gerar o relatório.
-
-O HTML reúne as specs selecionadas, com resultados, duração, gráficos e detalhes das falhas. CSS, JavaScript e screenshots capturados em falhas ficam incorporados, permitindo abrir o arquivo sem servidor ou arquivos auxiliares. As propostas `@skip` excluídas por filtro não contam como cobertura executada.
-
-Somente o último relatório é mantido: cada execução limpa `artifacts/reports/` antes de começar. Uma execução por tag também substitui o resultado anterior. Não execute processos simultâneos compartilhando esse diretório. `cypress open` não gera relatório automaticamente.
-
-Com Compose, `./artifacts` é montado em `/e2e/artifacts`: o relatório fica disponível no host e permanece após `docker compose down`. O diretório pai é montado para permitir que o reporter limpe e recrie `reports/` entre execuções. Para persistir relatórios com `docker run --rm`, crie `artifacts/` e acrescente `--volume "$PWD/artifacts:/e2e/artifacts"` ao comando. Também é possível executar sem `--rm` e copiar o relatório antes de remover o container:
-
-```bash
-mkdir -p artifacts
-docker cp magazord-local:/e2e/artifacts/reports artifacts/reports
-```
-
-Em Linux, ao terminar a geração, o container devolve a propriedade de `artifacts/` e do conteúdo de `artifacts/reports/` ao usuário do arquivo `cypress.env.json` montado pelo Compose. Isso permite alternar Docker e execução no host. Quando a configuração é fornecida somente pelo ambiente, usa o proprietário do diretório `artifacts/`; na CI sem montagem, mantém o proprietário do container.
-
-Correção validada alternando Compose (duas simulações passando) e execução local (API-08 passando), sem ajuste manual entre execuções. HTML e diretório ficaram com UID/GID do usuário local. Também conferidos resultados parciais e execução da CI sem montagem. Log em `artifacts/report-permissions-validation.log`.
-
-Para relatórios gerados por versões anteriores à correção, ajuste o proprietário uma única vez, se necessário:
-
-```bash
-sudo chown -R "$(id -u):$(id -g)" artifacts/
-```
-
-Na aba **Actions** do GitHub, abra a execução e baixe o artefato **cypress-report**, disponível por sete dias. Extraia o arquivo baixado e abra `index.html`. A CI tenta coletar e publicar o relatório mesmo quando os testes falham, antes de remover o container. Screenshots separados continuam disponíveis no artefato `cypress-screenshots` quando existem.
-
-Screenshots de falhas foram validados em Chrome, navegador usado no Docker e na CI. Nesta validação, o Electron local apresentou timeout ao capturar a tela de uma falha; o HTML foi gerado com esse erro, sem screenshot. Para conferir captura no host, use `npm test -- --browser chrome --env "tags=not @skip"` com Chrome instalado.
-
-Os hooks de Cucumber e Mochawesome são executados no mesmo fluxo de eventos para preservar a consolidação dos resultados e o fechamento do servidor de simulação. Falhas de testes continuam retornando saída diferente de zero. Interrupções abruptas, falha de instalação ou erro anterior à inicialização do reporter podem impedir geração do relatório; nesse caso, consulte os logs. Relatórios são ignorados pelo Git e pelo contexto de build. Revise mensagens de erro e screenshots antes de compartilhar, pois podem conter dados exibidos durante a execução.
-
-Validação da integração em 08/11/2026: duas simulações consolidadas, substituição por seleção de um teste, falha controlada com HTML/screenshot no Chrome e coleta da CI simulada em container. Suíte completa no Compose: **21 testes passaram**, saída 0; HTML conferido com 21 sucessos e sem valores das credenciais locais. Relatório preservado após `docker compose down`. Log sanitizado em `artifacts/mochawesome-compose.log`. Execução remota do workflow ainda depende de publicação das alterações.
-
 ## Execução com Docker Compose
 
 Na primeira utilização, crie `cypress.env.json` a partir de `cypress.env.example`, caso o arquivo ainda não exista, e preencha as seis credenciais da seção [Configuração](#configuração). Preserve o arquivo já configurado em execuções seguintes.
