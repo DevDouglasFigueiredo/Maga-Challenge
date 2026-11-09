@@ -77,7 +77,7 @@ Preencha os valores conforme os testes que pretende executar. Se o arquivo já e
 npm test
 ```
 
-Para executar somente os cenários implementados, excluindo as propostas documentais marcadas com `@skip`:
+Para executar somente os cenários implementados, excluindo as cenarios não automatizados estão marcadas com `@skip`:
 
 ```bash
 npm test -- --env tags="not @skip"
@@ -202,9 +202,9 @@ Os arquivos `.feature` são a fonte única de documentação dos casos de teste 
 - [Parte 2 — Carrinho e checkout](cypress/parte2-e2e/questao2.1/feature/).
 - [Parte 3 — Upload de CSV](cypress/parte3-arquivos/questao3.1/feature/).
 
-Os cenários marcados com `@skip` são propostas documentais e não representam cobertura executada. A distinção entre integrações reais, simulações e limitações dos alvos está nas respostas teóricas de cada parte e na seção [Observações](#observações). Resultados de execução ficam nos relatórios; a presença de um cenário documentado não comprova sua aprovação ou sucesso.
+Os cenários marcados com `@skip` são cenarios que julgo importante ter no contexto da feature e não representam cobertura executada. A distinção entre integrações reais, simulações e limitações dos alvos está nas respostas teóricas de cada parte e na seção [Observações](#observações). Resultados de execução ficam nos relatórios; a presença de um cenário documentado não comprova sua aprovação ou sucesso.
 
-O enunciado solicita os casos de teste em DOCX, PDF ou TXT. A documentação atual é entregue em `.feature`; não há exportação nesses formatos no projeto. Essa escolha mantém uma única fonte dos casos, mas permanece uma diferença em relação ao formato solicitado.
+O enunciado solicita os casos de teste em DOCX, PDF ou TXT. A documentação atual é entregue em `.feature`; não há exportação nesses formatos no projeto. Essa escolha mantém uma única fonte dos casos.
 
 ## Observações
 
